@@ -2,90 +2,472 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+<meta charset="UTF-8">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#09141F">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Mobile App</title>
 
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<style>
+:root {
+    --bg: #09141F;
+    --white: #E8F1FA;
+    --blue: #0077D2;
+    --muted: #263E64;
+}
 
-        html, body {
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background: #09141F;
-        }
+* {
+    box-sizing: border-box;
+}
 
-        body {
-            min-height: 100vh;
-            min-height: 100dvh;
-            width: 100%;
-        }
+html, body {
+    margin: 0;
+    width: 100%;
+    min-height: 100%;
+    background: var(--bg);
+    color: var(--white);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
 
-        /* CENTER CIRCLE */
+button, input {
+    font: inherit;
+}
 
-        .circle {
-            position: fixed;
-            top: calc(50% - 60px);
-            left: 50%;
-            transform: translate(-50%, -50%);
+button {
+    cursor: pointer;
+}
 
-            width: 150px;
-            height: 150px;
+/* IPHONE 14 SCREEN */
 
-            background: white;
-            border-radius: 50%;
-        }
+.screen {
+    position: relative;
+    margin: auto;
+    width: 100%;
+    max-width: 390px;
+    height: 100dvh;
+    min-height: 540px;
+    overflow: hidden;
+    background: var(--bg);
+}
 
-        /* BOTTOM BUTTONS */
+/* CENTER LOGO */
 
-        .buttons {
-            position: fixed;
-            bottom: calc(10px + env(safe-area-inset-bottom));
-            left: 0;
+.home-logo {
+    position: absolute;
+    width: 220px;
+    max-width: 60%;
+    height: auto;
+    left: 50%;
+    top: 44.5%;
+    transform: translate(-50%, -50%);
+    mix-blend-mode: screen;
+}
 
-            display: flex;
-            gap: 12px;
+/* MAIN BUTTONS */
 
-            width: 100%;
-            padding: 0 20px;
-        }
+.actions {
+    position: absolute;
+    bottom: calc(96px + env(safe-area-inset-bottom));
+    left: 20px;
+    right: 20px;
+    display: flex;
+    gap: 8px;
+}
 
-        button {
-            flex: 1;
-            height: 52px;
+.action {
+    border: 0;
+    border-radius: 12px;
+    height: 55px;
+    flex: 1;
+    color: white;
+    font-size: 19px;
+    background: var(--blue);
+}
 
-            border: none;
-            border-radius: 10px;
+.action.scan {
+    background: var(--muted);
+    color: #84D5FF;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 14px;
+}
 
-            cursor: pointer;
-        }
+.action svg {
+    width: 26px;
+    height: 26px;
+}
 
-        .button1 {
-            background: #0077D2;
-        }
+/* BOTTOM NAVIGATION */
 
-        .button2 {
-            background: #263E64;
-        }
-    </style>
+.navbar {
+    position: absolute;
+    bottom: calc(17px + env(safe-area-inset-bottom));
+    left: 20px;
+    right: 20px;
+
+    border: 1px solid #2B4057;
+    background: #101B27;
+    border-radius: 40px;
+
+    height: 62px;
+    display: flex;
+    padding: 3px;
+
+    box-shadow: 0 0 0 1px #152536;
+}
+
+.tab {
+    color: var(--white);
+    border: 0;
+    background: none;
+    flex: 1;
+    min-width: 0;
+    border-radius: 38px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 11px;
+}
+
+.tab.active {
+    background: #303B46;
+}
+
+.tab svg {
+    width: 25px;
+    height: 25px;
+    stroke: currentColor;
+    stroke-width: 2;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.tab.active svg.home-icon {
+    fill: currentColor;
+}
+
+.tab span {
+    white-space: nowrap;
+}
+
+/* OTHER PAGES */
+
+.panel {
+    position: absolute;
+    inset: 0 0 calc(178px + env(safe-area-inset-bottom));
+    padding: calc(65px + env(safe-area-inset-top)) 25px 16px;
+    overflow: auto;
+    background: var(--bg);
+}
+
+.panel[hidden],
+.home-logo[hidden],
+.actions[hidden] {
+    display: none;
+}
+
+.panel h1 {
+    font-size: 27px;
+    margin: 0 0 12px;
+}
+
+.panel p {
+    color: #9BB0C6;
+    line-height: 1.5;
+}
+
+.tile {
+    background: #15283D;
+    padding: 18px;
+    border-radius: 16px;
+    margin: 16px 0;
+}
+
+.tile h2 {
+    font-size: 18px;
+    margin: 0 0 10px;
+}
+
+.field {
+    width: 100%;
+    border: 1px solid #38516D;
+    border-radius: 10px;
+    background: #0D1D2C;
+    color: white;
+    padding: 13px;
+    margin: 7px 0;
+}
+
+.primary {
+    border: 0;
+    background: var(--blue);
+    color: white;
+    border-radius: 10px;
+    padding: 13px 18px;
+    width: 100%;
+    margin-top: 12px;
+}
+
+.back {
+    background: none;
+    border: 0;
+    color: #87D0FF;
+    padding: 0 0 20px;
+}
+
+.scanframe {
+    width: 180px;
+    height: 180px;
+    border: 3px solid #87D0FF;
+    border-radius: 20px;
+    margin: 35px auto;
+    display: grid;
+    place-items: center;
+    color: #87D0FF;
+}
+
+.scanframe svg {
+    width: 75px;
+    height: 75px;
+}
+
+@media(max-height: 650px) {
+    .home-logo {
+        width: 150px;
+    }
+
+    .actions {
+        bottom: calc(85px + env(safe-area-inset-bottom));
+    }
+
+    .navbar {
+        bottom: calc(10px + env(safe-area-inset-bottom));
+    }
+}
+</style>
 </head>
 
 <body>
 
-    <div class="circle"></div>
+<div class="screen">
 
-    <div class="buttons">
-        <button class="button1"></button>
-        <button class="button2"></button>
+    <!-- LOGO -->
+
+    <img
+        class="home-logo"
+        id="logo"
+        src="logo.png"
+        alt="Colorful circular logo"
+    >
+
+    <!-- PAGE CONTENT -->
+
+    <main class="panel" id="panel" hidden aria-live="polite"></main>
+
+    <!-- MAIN BUTTONS -->
+
+    <div class="actions" id="actions">
+
+        <button class="action" onclick="showPage('swish')">
+            Swish
+        </button>
+
+        <button class="action scan" onclick="showPage('scan')">
+            Scan
+
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M3 9V3h6M15 3h6v6M3 15v6h6M21 15v6h-6M7 7h3v3H7zM14 7h3v3h-3zM7 14h3v3H7zM14 14h2m2 0v3m-4 0h2"/>
+            </svg>
+        </button>
+
     </div>
+
+    <!-- BOTTOM NAVIGATION -->
+
+    <nav class="navbar" aria-label="Main navigation">
+
+        <button class="tab active" data-page="home" onclick="showPage('home')">
+
+            <svg class="home-icon" viewBox="0 0 24 24">
+                <path d="m3 11 9-8 9 8v9a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/>
+            </svg>
+
+            <span>Home</span>
+        </button>
+
+        <button class="tab" data-page="together" onclick="showPage('together')">
+
+            <svg viewBox="0 0 24 24">
+                <path d="M20.5 5.5a5.5 5.5 0 0 0-8.5 0 5.5 5.5 0 0 0-8.5 0c-2.2 2.8-1.4 6.2 1 8.6L12 21l7.5-6.9c2.4-2.4 3.2-5.8 1-8.6Z"/>
+                <path d="m8 13 3-3 3 3 3-3"/>
+            </svg>
+
+            <span>Together</span>
+        </button>
+
+        <button class="tab" data-page="history" onclick="showPage('history')">
+
+            <svg viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9"/>
+                <path d="M12 6v6l4 2"/>
+            </svg>
+
+            <span>History</span>
+        </button>
+
+        <button class="tab" data-page="profile" onclick="showPage('profile')">
+
+            <svg viewBox="0 0 24 24">
+                <circle cx="12" cy="7" r="4"/>
+                <path d="M4 21v-2a8 8 0 0 1 16 0v2Z"/>
+            </svg>
+
+            <span>Profile</span>
+        </button>
+
+    </nav>
+
+</div>
+
+<script>
+
+const panel = document.getElementById('panel');
+const logo = document.getElementById('logo');
+const actions = document.getElementById('actions');
+
+const pages = {
+
+    together: `
+        <h1>Together</h1>
+        <div class="tile">
+            <h2>Shared space</h2>
+            <p>Your shared activities will appear here.</p>
+            <button class="primary" onclick="demoNotice()">
+                Create a shared space
+            </button>
+        </div>
+    `,
+
+    history: `
+        <h1>History</h1>
+        <div class="tile">
+            <h2>No activity yet</h2>
+            <p>This demo has no transaction history.</p>
+        </div>
+    `,
+
+    profile: `
+        <h1>Profile</h1>
+        <div class="tile">
+            <h2>Demo profile</h2>
+            <p>Customize your app experience.</p>
+
+            <label>
+                Display name
+                <input class="field" id="displayname"
+                placeholder="Your name" maxlength="40">
+            </label>
+
+            <button class="primary" onclick="saveName()">
+                Save name
+            </button>
+
+            <p id="savedname"></p>
+        </div>
+    `,
+
+    swish: `
+        <button class="back" onclick="showPage('home')">← Back</button>
+
+        <h1>Swish</h1>
+
+        <div class="tile">
+            <h2>Demo payment</h2>
+            <p>No money will be sent.</p>
+
+            <label>
+                Recipient
+                <input class="field" placeholder="Name">
+            </label>
+
+            <label>
+                Amount (SEK)
+                <input class="field" type="number"
+                min="0" step="0.01" placeholder="0.00">
+            </label>
+
+            <button class="primary" onclick="demoNotice()">
+                Continue (demo)
+            </button>
+        </div>
+    `,
+
+    scan: `
+        <button class="back" onclick="showPage('home')">← Back</button>
+
+        <h1>Scan</h1>
+
+        <div class="scanframe">
+            <svg viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="1.5">
+                <path d="M3 9V3h6M15 3h6v6M3 15v6h6M21 15v6h-6M7 7h3v3H7zM14 7h3v3h-3zM7 14h3v3H7zM14 14h2m2 0v3m-4 0h2"/>
+            </svg>
+        </div>
+
+        <p style="text-align:center">
+            QR scanning is a visual demo only.
+        </p>
+    `
+};
+
+function showPage(page) {
+
+    const home = page === 'home';
+
+    logo.hidden = !home;
+    actions.hidden = !home;
+    panel.hidden = home;
+
+    if (!home) {
+        panel.innerHTML = pages[page] || '';
+    }
+
+    document.querySelectorAll('.tab').forEach(tab => {
+
+        const active = tab.dataset.page === page;
+
+        tab.classList.toggle('active', active);
+
+        tab.setAttribute(
+            'aria-current',
+            active ? 'page' : 'false'
+        );
+
+    });
+}
+
+function demoNotice() {
+    alert('Demo only — no real payment or account action has been performed.');
+}
+
+function saveName() {
+
+    const name = document.getElementById('displayname').value.trim();
+
+    document.getElementById('savedname').textContent =
+        name ? 'Saved for this preview: ' + name : 'Please enter a name.';
+
+}
+
+</script>
 
 </body>
 </html>
