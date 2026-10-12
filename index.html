@@ -14,6 +14,57 @@
 
 <style>
 
+/* Swishscreen */
+
+.my-container {
+    position: absolute;
+
+    /* POSITION */
+    top: 100px;
+    left: 5%;
+
+    width: 90%;
+    height: 350px;
+
+    background: linear-gradient(
+        145deg,
+        #09141F 100%
+    );
+
+    
+    border-radius: 0;
+
+    clip-path: shape(
+        from 0 0,
+        line to 100% 0,
+        line to 100% 65%,
+        quad to 0 65% via 50% 135%,
+        close
+);
+
+}
+.swishscreen {
+    position: relative;
+    width: 100%;
+    min-height: 100%;
+
+    background: #09141F !important;
+}
+
+
+.swishscreen h1 {
+    font-size: 28px;
+    font-weight: 600;
+    text-align: center;
+    margin-top: 30px;
+}
+
+.swishscreen p {
+    font-size: 16px;
+    text-align: center;
+    color: white;
+}
+
 /* GLOBAL */
 
 :root {
@@ -69,8 +120,8 @@ button {
 .home-logo {
     position: absolute;
 
-    width: 220px;
-    max-width: 1400%;
+    width: 200px;
+    max-width: 70%;
     height: auto;
 
     left: 50%;
@@ -441,6 +492,27 @@ const logo = document.getElementById('logo');
 const actions = document.getElementById('actions');
 
 const pages = {
+    swishscreen: `
+        <h1>Second Swish Screen</h1>
+
+        <div class="swish2-screen">
+
+    
+<div class="my-container">
+    <svg viewBox="0 0 350 350"
+         preserveAspectRatio="none"
+         xmlns="http://www.w3.org/2000/svg">
+
+        <path
+            d="M 0 0 H 350 V 230 Q 175 270 0 230 Z"
+            fill="#669B17"
+        />
+
+    </svg>
+</div>
+
+</div>
+    `,
 
     together: `
         <h1>Together</h1>
@@ -519,11 +591,12 @@ const pages = {
                     placeholder="0.00">
             </label>
 
-            <button class="primary" onclick="demoNotice()">
-                Swisha
+            <button class="primary" onclick="showPage('swishscreen')">
+                next
             </button>
         </div>
     `,
+
 
     scan: `
         <button class="back" onclick="showPage('home')">
