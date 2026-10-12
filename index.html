@@ -627,49 +627,66 @@ button {
 
 /* WHITE FLOATING PARTICLES */
 
+
+/* ANIMATED FLOATING PARTICLES */
+
+/* MORE AND BIGGER IDLE PARTICLES */
+/* RANDOM IDLE PARTICLES */
+
 .confirmation-particles {
     position: absolute;
-    top: 0;
-    left: 0;
+    inset: 0;
     width: 100%;
-    height: 290px;
+    height: 100%;
+    overflow: hidden;
     pointer-events: none;
     z-index: 1;
 }
 
-.confirmation-particles::before,
-.confirmation-particles::after {
-    content: "";
+.idle-particle {
     position: absolute;
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
+
+    width: var(--size);
+    height: var(--size);
+
     background: white;
-    opacity: .75;
+    border-radius: 50%;
+
+    opacity: 0;
+
+    box-shadow:
+        0 0 6px rgba(255,255,255,.9),
+        0 0 14px rgba(255,255,255,.5);
+
+    pointer-events: none;
+
+    animation: randomIdleParticle var(--duration) linear forwards;
 }
 
-.confirmation-particles::before {
-    top: 85px;
-    left: 30%;
-    box-shadow:
-        90px -35px 3px white,
-        150px 65px 2px white,
-        -40px 145px 2px white,
-        100px 185px 1px white,
-        165px 155px 3px white,
-        30px 125px 2px white;
-}
+@keyframes randomIdleParticle {
+    0% {
+        transform: translate(0, 0) scale(.5);
+        opacity: 0;
+    }
 
-.confirmation-particles::after {
-    top: 35px;
-    left: 75%;
-    opacity: .45;
-    box-shadow:
-        -130px 10px 2px white,
-        -80px 140px 3px white,
-        40px 100px 2px white,
-        -165px 210px 2px white,
-        10px 205px 2px white;
+    12% {
+        opacity: var(--brightness);
+    }
+
+    75% {
+        opacity: var(--brightness);
+    }
+
+    100% {
+        transform:
+            translate(
+                var(--moveX),
+                var(--moveY)
+            )
+            scale(1.3);
+
+        opacity: 0;
+    }
 }
 
 /* CHECKMARK */
@@ -790,14 +807,125 @@ button {
     display: grid;
     place-items: center;
 }
+/* SAVED CONTACTS */
 
+.save-contact-btn {
+    width: 100%;
+    padding: 12px;
+    margin-top: 12px;
+
+    border: 1px solid #38516D;
+    border-radius: 10px;
+
+    background: #263E64;
+    color: white;
+
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.saved-contacts {
+    margin-top: 15px;
+}
+
+.saved-contacts select {
+    cursor: pointer;
+}
+
+.contact-navigation {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.contact-navigation button {
+    flex: 1;
+    padding: 10px;
+
+    background: #15283D;
+    border: 1px solid #38516D;
+    border-radius: 8px;
+
+    color: white;
+    font-size: 13px;
+}
+/* INTERACTIVE PARTICLES */
+
+.confirmation-green {
+    touch-action: none;
+}
+
+/* INTERACTIVE PARTICLES ABOVE ALL CONTENT */
+
+.click-particle-layer {
+    position: absolute;
+
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    overflow: hidden;
+
+    pointer-events: none;
+
+    z-index: 9999;
+}
+
+/* BIGGER INTERACTIVE PARTICLES */
+
+.click-particle {
+    position: absolute;
+
+    width: var(--size);
+    height: var(--size);
+
+    background: white;
+    border-radius: 50%;
+
+    box-shadow:
+        0 0 7px rgba(255,255,255,1),
+        0 0 16px rgba(255,255,255,.7),
+        0 0 25px rgba(255,255,255,.3);
+
+    pointer-events: none;
+
+    animation: clickParticleFly var(--duration) ease-out forwards;
+}
+
+@keyframes clickParticleFly {
+    0% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+
+    100% {
+        transform:
+            translate(
+                calc(-50% + var(--moveX)),
+                calc(-50% + var(--moveY))
+            )
+            scale(0);
+
+        opacity: 0;
+    }
+}
 </style>
 
 </head>
 
 <body>
 
+
+<audio id="paymentSound" preload="auto">
+    <source src="./payment.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="paymentSlideSound" src="./paymentslide.mp3" preload="auto" loop></audio>
 <div class="screen">
+<button onclick="document.getElementById('paymentSound').play()">
+    TEST SOUND
+</button>
 
     <!-- CENTER JPEG LOGO -->
 
@@ -998,9 +1126,8 @@ swishscreen: `
 
             </svg>
 
+            <!-- RANDOM IDLE PARTICLES -->
             <div class="confirmation-particles"></div>
-
-            </div>
 
             <!-- SUCCESS CHECKMARK -->
             <svg class="confirmation-check"
@@ -1064,6 +1191,10 @@ swishscreen: `
             </button>
 
         </div>
+
+        <!-- INTERACTIVE PARTICLES ABOVE EVERYTHING -->
+        <div class="click-particle-layer"
+             id="clickParticleLayer"></div>
 
     </div>
 
@@ -1171,8 +1302,29 @@ swishscreen: `
                 Phone number
 
                 <input class="field" id="phoneNumber" type="tel" placeholder="070 123 45 67">
-
             </label>
+            <!-- SAVE CONTACT -->
+<button class="save-contact-btn" onclick="saveContact()">
+    + Save Contact
+</button>
+
+<!-- SAVED CONTACTS -->
+<div class="saved-contacts">
+
+    <select id="contactSelector"
+            class="field"
+            onchange="selectSavedContact()">
+
+        <option value="">Select a saved contact...</option>
+
+    </select>
+
+    <div class="contact-navigation">
+        <button onclick="browseContacts(-1)">‹ Previous</button>
+        <button onclick="browseContacts(1)">Next ›</button>
+    </div>
+
+</div>
 
             <label>
 
@@ -1227,6 +1379,8 @@ swishscreen: `
                 <path d="M3 9V3h6M15 3h6v6M3 15v6h6M21 15v6h-6M7 7h3v3H7zM14 7h3v3h-3zM7 14h3v3H7zM14 14h2m2 0v3m-4 0h2"/>
 
             </svg>
+        <!-- PARTICLES ABOVE ALL PAYMENT CONTENT -->
+<div class="click-particle-layer" id="clickParticleLayer"></div>
 
         </div>
 
@@ -1251,10 +1405,12 @@ function showPage(page) {
     panel.hidden = home;
 
     if (!home) {
+    panel.innerHTML = pages[page] || '';
 
-        panel.innerHTML = pages[page] || '';
-
+    if (page === 'swish') {
+        loadSavedContacts();
     }
+}
 
     document.querySelectorAll('.tab').forEach(tab => {
 
@@ -1295,6 +1451,19 @@ function saveName() {
 }
 
 function goToSwishScreen() {
+    // PLAY PAYMENT SOUND
+const paymentSound = document.getElementById('paymentSound');
+
+if (paymentSound) {
+    paymentSound.pause();
+    paymentSound.currentTime = 0;
+    paymentSound.volume = 1;
+
+
+    paymentSound.play().catch(error => {
+        alert('Sound error: ' + error.message);
+    });
+}
 
     const recipient = document.getElementById('recipient')?.value || '';
 
@@ -1315,6 +1484,7 @@ function goToSwishScreen() {
         : '';
 
     updateSwishDateTime();
+    startIdleParticles();
 
 }
 
@@ -1343,7 +1513,418 @@ function updateSwishDateTime() {
 }
 
 setInterval(updateSwishDateTime, 1000);
+// LOAD SAVED CONTACTS
 
+function getSavedContacts() {
+    try {
+        const contacts = JSON.parse(
+            localStorage.getItem('swishContacts') || '[]'
+        );
+
+        return Array.isArray(contacts) ? contacts : [];
+    } catch {
+        return [];
+    }
+}
+
+
+// SAVE A NEW CONTACT
+
+function saveContact() {
+
+    const name = document.getElementById('recipient').value.trim();
+    const phone = document.getElementById('phoneNumber').value.trim();
+
+    if (!name || !phone) {
+        alert('Please enter a name and phone number first.');
+        return;
+    }
+
+    const contacts = getSavedContacts();
+
+    // Prevent saving the same phone number twice
+    const existing = contacts.findIndex(
+        contact => contact.phone === phone
+    );
+
+    if (existing !== -1) {
+        contacts[existing].name = name;
+    } else {
+        contacts.push({ name, phone });
+    }
+
+    try {
+        localStorage.setItem('swishContacts', JSON.stringify(contacts));
+    } catch {
+        alert('Could not save the contact in this browser.');
+        return;
+    }
+
+    loadSavedContacts(phone);
+
+    alert('Contact saved!');
+}
+
+
+// DISPLAY CONTACTS IN THE DROPDOWN
+
+function loadSavedContacts(selectedPhone = '') {
+
+    const selector = document.getElementById('contactSelector');
+
+    if (!selector) return;
+
+    const contacts = getSavedContacts();
+
+    selector.replaceChildren(new Option('Select a saved contact...', ''));
+
+    contacts.forEach(contact => {
+
+        const option = new Option(
+            contact.name + ' (' + contact.phone + ')',
+            contact.phone
+        );
+
+        selector.add(option);
+    });
+
+    selector.value = selectedPhone;
+}
+
+
+// SELECT A SAVED CONTACT
+
+function selectSavedContact() {
+
+    const selector = document.getElementById('contactSelector');
+    const phone = selector.value;
+
+    const contact = getSavedContacts().find(
+        item => item.phone === phone
+    );
+
+    if (!contact) return;
+
+    document.getElementById('recipient').value = contact.name;
+    document.getElementById('phoneNumber').value = contact.phone;
+}
+
+
+// BROWSE CONTACTS WITH PREVIOUS / NEXT
+
+function browseContacts(direction) {
+
+    const contacts = getSavedContacts();
+
+    if (contacts.length === 0) {
+        alert('You have no saved contacts yet.');
+        return;
+    }
+
+    const selector = document.getElementById('contactSelector');
+
+    let index = contacts.findIndex(
+        contact => contact.phone === selector.value
+    );
+
+    if (index === -1) {
+        index = direction === 1 ? 0 : contacts.length - 1;
+    } else {
+        index = (index + direction + contacts.length) % contacts.length;
+    }
+
+    selector.value = contacts[index].phone;
+
+    selectSavedContact();
+}
+// INTERACTIVE GREEN SCREEN PARTICLES
+
+let particleHoldInterval = null;
+let particlePointerPosition = null;
+let slideSoundTimer = null;
+let slideSoundPointerId = null;
+
+// BIGGER AND MORE INTERACTIVE PARTICLES
+
+function createClickParticles(clientX, clientY, amount = 18) {
+
+    const layer = document.getElementById('clickParticleLayer');
+
+if (!layer) return;
+
+const rect = layer.getBoundingClientRect();
+
+const x = clientX - rect.left;
+const y = clientY - rect.top;
+
+// INVISIBLE PARTICLE BOUNDARY
+const dateElement = document.getElementById('swishDateTime');
+
+if (dateElement) {
+
+    const dateRect = dateElement.getBoundingClientRect();
+
+    // Stop creating particles when the pointer
+    // reaches or goes below the date and time
+    if (clientY >= dateRect.top) {
+        return;
+    }
+
+}
+
+    for (let i = 0; i < amount; i++) {
+
+        const particle = document.createElement('span');
+
+        particle.className = 'click-particle';
+
+        const angle = Math.random() * Math.PI * 2;
+
+        // Particles travel further
+        const distance = 25 + Math.random() * 95;
+
+        const moveX = Math.cos(angle) * distance;
+        const moveY = Math.sin(angle) * distance;
+
+        // Bigger particles: 4px to 10px
+        const size = 4 + Math.random() * 6;
+
+        // Slightly longer animations
+        const duration = 650 + Math.random() * 850;
+
+        particle.style.left = x + 'px';
+        particle.style.top = y + 'px';
+
+        particle.style.setProperty('--moveX', moveX + 'px');
+        particle.style.setProperty('--moveY', moveY + 'px');
+        particle.style.setProperty('--size', size + 'px');
+        particle.style.setProperty('--duration', duration + 'ms');
+
+        layer.appendChild(particle);
+
+        particle.addEventListener('animationend', () => {
+            particle.remove();
+        }, { once: true });
+    }
+}
+
+
+// START PARTICLES WHEN PRESSED
+
+function startParticleHold(event) {
+    
+
+    if (particleHoldInterval !== null) return;
+
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
+
+    // Start silently during the actual user interaction
+const sound = document.getElementById('paymentSlideSound');
+
+if (sound) {
+    sound.pause();
+    sound.currentTime = 0;
+    sound.volume = 0;
+
+    sound.play().catch(error => {
+        console.log('Slide sound error:', error);
+    });
+
+    // Only make it audible after holding for 250ms
+    clearTimeout(slideSoundTimer);
+
+    slideSoundTimer = setTimeout(() => {
+        if (particleHoldInterval !== null) {
+            sound.volume = 1;
+        }
+    }, 250);
+}
+    // Start sound only after holding for 250 milliseconds
+slideSoundPointerId = event.pointerId;
+
+clearTimeout(slideSoundTimer);
+
+slideSoundTimer = setTimeout(() => {
+
+    if (particleHoldInterval === null) return;
+
+    const sound = document.getElementById('paymentSlideSound');
+
+    if (!sound) return;
+
+    sound.currentTime = 0;
+    sound.volume = 1;
+
+    sound.play().catch(error => {
+        console.log('Slide sound error:', error);
+    });
+
+}, 250);
+
+    particlePointerPosition = {
+        x: event.clientX,
+        y: event.clientY
+    };
+
+    // Create an immediate burst
+    createClickParticles(
+        particlePointerPosition.x,
+        particlePointerPosition.y,
+        25
+    );
+
+    // Continue creating particles while holding
+    particleHoldInterval = setInterval(() => {
+
+    if (!particlePointerPosition) return;
+
+    createClickParticles(
+        particlePointerPosition.x,
+        particlePointerPosition.y,
+        10
+    );
+
+}, 55);
+}
+
+
+// FOLLOW FINGER OR MOUSE
+
+function moveParticleHold(event) {
+
+    if (particleHoldInterval === null) return;
+
+    particlePointerPosition = {
+        x: event.clientX,
+        y: event.clientY
+    };
+}
+
+
+// STOP PARTICLES WHEN RELEASED
+
+function stopParticleHold() {
+
+    // Stop spawning particles
+    if (particleHoldInterval !== null) {
+        clearInterval(particleHoldInterval);
+        particleHoldInterval = null;
+    }
+
+    particlePointerPosition = null;
+
+    // Cancel the sound if released before 250ms
+    clearTimeout(slideSoundTimer);
+    slideSoundTimer = null;
+    slideSoundPointerId = null;
+
+    // Stop sound immediately when released
+    const sound = document.getElementById('paymentSlideSound');
+
+    if (sound) {
+        sound.pause();
+        sound.currentTime = 0;
+    }
+}
+
+
+// CONNECT EVENTS TO GREEN CONTAINER
+
+document.addEventListener('pointerdown', event => {
+
+    if (!event.target.closest('.confirmation-green')) return;
+
+    startParticleHold(event);
+});
+
+document.addEventListener('pointermove', moveParticleHold);
+
+document.addEventListener('pointerup', stopParticleHold);
+
+document.addEventListener('pointercancel', stopParticleHold);
+
+window.addEventListener('blur', stopParticleHold);
+// RANDOM IDLE PARTICLE SYSTEM
+
+let idleParticleInterval = null;
+
+function createIdleParticle() {
+
+    const container = document.querySelector('.confirmation-particles');
+
+    if (!container) return;
+
+    const particle = document.createElement('span');
+
+    particle.className = 'idle-particle';
+
+    const width = container.clientWidth;
+    const height = container.clientHeight;
+
+    // Random starting position
+    const x = Math.random() * width;
+    const y = Math.random() * height;
+
+    // Random direction and travel distance
+    const angle = Math.random() * Math.PI * 2;
+    const distance = 30 + Math.random() * 140;
+
+    const moveX = Math.cos(angle) * distance;
+    const moveY = Math.sin(angle) * distance;
+
+    // Random size, speed and brightness
+    const size = 3 + Math.random() * 6;
+    const duration = 2500 + Math.random() * 5500;
+    const brightness = .35 + Math.random() * .6;
+
+    particle.style.left = x + 'px';
+    particle.style.top = y + 'px';
+
+    particle.style.setProperty('--size', size + 'px');
+    particle.style.setProperty('--moveX', moveX + 'px');
+    particle.style.setProperty('--moveY', moveY + 'px');
+    particle.style.setProperty('--duration', duration + 'ms');
+    particle.style.setProperty('--brightness', brightness);
+
+    container.appendChild(particle);
+
+    particle.addEventListener('animationend', () => {
+        particle.remove();
+    }, { once: true });
+}
+
+
+// START IDLE PARTICLES
+
+function startIdleParticles() {
+
+    clearInterval(idleParticleInterval);
+
+    const container = document.querySelector('.confirmation-particles');
+
+    if (!container) return;
+
+    container.replaceChildren();
+
+    // Immediately create particles so the screen isn't empty
+    for (let i = 0; i < 35; i++) {
+        createIdleParticle();
+    }
+
+    // Continuously spawn new particles
+    idleParticleInterval = setInterval(() => {
+
+        if (!document.querySelector('.confirmation-particles')) {
+            clearInterval(idleParticleInterval);
+            idleParticleInterval = null;
+            return;
+        }
+
+        createIdleParticle();
+        createIdleParticle();
+
+    }, 180);
+}
 </script>
 
 </body>
