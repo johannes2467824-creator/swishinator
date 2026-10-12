@@ -1195,7 +1195,7 @@ swishscreen: `
 
             <div class="confirmation-brand">
                 <span class="confirmation-brand-mark">🌈</span>
-                <span>swish®</span>
+                <span>swIsh®</span>
             </div>
 
             <button class="confirmation-close"
@@ -1462,7 +1462,23 @@ function saveName() {
         : 'Please enter a name.';
 
 }
+function formatSwedishPhone(phone) {
+    let digits = String(phone).replace(/\D/g, '');
 
+    if (digits.startsWith('46')) {
+        digits = '0' + digits.slice(2);
+    }
+
+    if (/^07\d{8}$/.test(digits)) {
+        return '+46 ' +
+            digits.slice(1, 3) + ' ' +
+            digits.slice(3, 6) + ' ' +
+            digits.slice(6, 8) + ' ' +
+            digits.slice(8, 10);
+    }
+
+    return phone;
+}
 function goToSwishScreen() {
     // PLAY PAYMENT SOUND
 const paymentSound = document.getElementById('paymentSound');
@@ -1481,21 +1497,19 @@ if (paymentSound) {
     const recipient = document.getElementById('recipient')?.value || '';
 
     const phone = document.getElementById('phoneNumber')?.value || '';
-
     const amount = document.getElementById('amount')?.value || '';
 
     showPage('swishscreen');
 
     document.getElementById('swishRecipient').textContent = recipient;
 
-    document.getElementById('swishPhone').textContent =
-    formatSwedishPhone(phoneNumber);
+    document.getElementById('swishPhone').textContent = formatSwedishPhone(phone);
 
-    document.getElementById('swishAmount').textContent = amount.trim() !== '' && Number.isFinite(Number(amount))
-
-        ? Number(amount).toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + ' kr'
-
-        : '';
+document.getElementById('swishAmount').textContent =
+    Number(amount.replace(',', '.')).toLocaleString('sv-SE', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2
+    }) + ' kr';
 
     updateSwishDateTime();
     startIdleParticles();
