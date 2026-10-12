@@ -15,7 +15,6 @@
 <style>
 
 /* Swishscreen */
-
 .my-container {
     position: absolute;
 
@@ -42,6 +41,24 @@
         close
 );
 
+}
+/*informations box*/
+.my-container2 {
+    position: absolute;
+
+    /*position*/
+    top: 550px;
+    left: 5%;
+
+    /* size */
+    width: 90%;
+    height: 110px;
+
+    /* Appearance */
+    background: #1A2434;
+    border-radius: 20px;
+
+    z-index: 5;
 }
 .swishscreen {
     position: relative;
@@ -391,8 +408,8 @@ button {
 
         <button
             class="action"
-            onclick="showPage('Swisha')">
-            Swisha
+            onclick="showPage('swish')">
+            swish
         </button>
 
         <button
@@ -496,7 +513,6 @@ const pages = {
         <h1>Second Swish Screen</h1>
 
         <div class="swish2-screen">
-
     
 <div class="my-container">
     <svg viewBox="0 0 350 520"
@@ -510,6 +526,8 @@ const pages = {
 
     </svg>
 </div>
+<!-- Informations box -->
+<div class="my-container2"></div>
 
 </div>
     `,
@@ -563,12 +581,12 @@ const pages = {
         </div>
     `,
 
-    Swisha: `
+    swish: `
         <button class="back" onclick="showPage('home')">
             ← Back
         </button>
 
-        <h1>Swisha</h1>
+        <h1>swish</h1>
 
         <div class="tile">
             <h2>Demo payment</h2>
