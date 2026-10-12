@@ -17,6 +17,12 @@
 <title>Mobile App</title>
 
 <style>
+.confirmation-logo {
+    display: block;
+    width: 115px;
+    height: auto;
+    object-fit: contain;
+}
     /* ADD THE FONT IMPORT HERE */
     @import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;500;600;700&display=swap');
 
@@ -1196,9 +1202,8 @@ swishscreen: `
         <div class="confirmation-footer">
 
             <div class="confirmation-brand">
-                <span class="confirmation-brand-mark">🌈</span>
-                <span>swIsh®</span>
-            </div>
+    <img src="./swishscreen.png" class="confirmation-logo" alt="Swish">
+</div>
 
             <button class="confirmation-close"
                     onclick="showPage('home')">
