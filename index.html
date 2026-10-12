@@ -1485,7 +1485,7 @@ if (paymentSound) {
 
     document.getElementById('swishAmount').textContent = amount.trim() !== '' && Number.isFinite(Number(amount))
 
-        ? Number(amount).toLocaleString('sv-SE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' kr'
+        ? Number(amount).toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + ' kr'
 
         : '';
 
