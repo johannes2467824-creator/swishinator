@@ -23,8 +23,10 @@
     width: 115px;
     height: auto;
     object-fit: contain;
-    position: relative;
-    top: 10px;
+
+    position: static;
+    transform: none;
+    margin: 0;
 }
     /* ADD THE FONT IMPORT HERE */
 
@@ -796,21 +798,28 @@ button {
 
 .confirmation-footer {
     position: absolute;
-    bottom: calc(25px + env(safe-area-inset-bottom));
+    bottom: 25px;
     left: 0;
+
     width: 100%;
+    height: 58px;
+
     display: flex;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
+
+    box-sizing: border-box;
 }
 
 .confirmation-brand {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+
     display: flex;
     align-items: center;
-    gap: 7px;
-    font-size: 19px;
-    font-weight: 800;
-    color: white;
+    justify-content: center;
 }
 
 .confirmation-brand-mark {
@@ -819,6 +828,10 @@ button {
 }
 
 .confirmation-close {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
     width: 58px;
     height: 58px;
     min-width: 58px;
