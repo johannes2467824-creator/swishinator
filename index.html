@@ -573,12 +573,12 @@ document.addEventListener('pointermove', event => {
     if (!gesture.sliding && distance >= SLIDE_THRESHOLD) {
         gesture.sliding = true;
         startSlideSound();
-        createClickParticles(event.clientX, event.clientY, 6);
+        createClickParticles(event.clientX, event.clientY, 12);
     }
     if (gesture.sliding) {
         const now = performance.now();
         if (now - lastParticleAt >= 45 && Math.hypot(event.clientX-gesture.lastX,event.clientY-gesture.lastY)>2) {
-            createClickParticles(event.clientX,event.clientY,3);
+            createClickParticles(event.clientX,event.clientY,6);
             lastParticleAt = now;
         }
     }
@@ -591,7 +591,7 @@ document.addEventListener('pointerup', event => {
     if (!gesture || gesture.id !== event.pointerId) return;
     if (!gesture.sliding) {
         pressSoundBox(gesture.sound);
-        createClickParticles(event.clientX,event.clientY,5);
+        createClickParticles(event.clientX,event.clientY,10);
     }
     stopParticleHold();
 });
@@ -665,7 +665,7 @@ function startIdleParticles() {
 
     container.replaceChildren();
 
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 22; i++) {
 
         createIdleParticle();
 
@@ -685,7 +685,7 @@ function startIdleParticles() {
 
         createIdleParticle();
 
-    }, 450);
+    }, 220);
 
 }
 </script>
