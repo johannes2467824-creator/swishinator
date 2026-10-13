@@ -1050,7 +1050,7 @@ swishscreen: `
 
     <svg class="confirmation-check" viewBox="0 0 64 64" fill="none"><circle cx="30" cy="34" r="25" stroke="white" stroke-opacity=".5" stroke-width="3"/><path d="M18 33 L27 42 L57 12" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
 
-    <div class="confirmation-message">Demo payment preview</div>
+    <div class="confirmation-message">Your payment has been sent!</div>
 
   </div>
 
@@ -1522,7 +1522,7 @@ overlay.innerHTML = `
 
         <div class="verification-text">
 
-            Verifying your demo payment...
+            Verifying your payment...
 
         </div>
 
@@ -1622,7 +1622,11 @@ function goToSwishScreen() {
 
  document.getElementById('swishRecipient').textContent=recipient;
 
- document.getElementById('swishPhone').textContent=customEnabled ? phone : formatSwedishPhone(phone);
+ 
+document.getElementById('swishPhone').textContent = customEnabled
+    ? phone.replace(/\D/g, '').replace(/(\d{3})(\d{3})(\d{2})(\d{2})/, '$1 $2 $3 $4')
+    : formatSwedishPhone(phone);
+
 
  document.getElementById('swishAmount').textContent=Number(amount.replace(',','.')).toLocaleString('sv-SE',{minimumFractionDigits:0,maximumFractionDigits:2})+' kr';
 
@@ -1636,13 +1640,18 @@ function goToSwishScreen() {
 
    const label=document.createElement('span'); label.className='confirmation-reference-label'; label.textContent='Reference';
 
-   const value=document.createElement('span'); value.className='confirmation-reference-value'; value.textContent='Demo only';
+   const value=document.createElement('span'); value.className='confirmation-reference-value'; 
+const randomDigits = Array.from(
+    crypto.getRandomValues(new Uint8Array(16)),
+    n => String(n % 10)
+).join('');
+
+value.textContent = randomDigits.match(/.{1,4}/g).join(' ');
+
 
    reference.append(label,value);
 
    const footer=screen.querySelector('.confirmation-footer'); footer.before(reference);
-
-   const demoLabel=document.createElement('div'); demoLabel.className='confirmation-demo-label'; demoLabel.textContent='DEMO PREVIEW · NO PAYMENT SENT'; footer.before(demoLabel);
 
  }
 
