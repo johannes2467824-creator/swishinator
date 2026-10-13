@@ -425,25 +425,110 @@ idleParticleInterval=setInterval(()=>{
 },450);
 }
 // PRELOAD ALL NINE SOUNDS
-const swishSounds = Array.from({ length: 9 }, (_, i) => {
-    const audio = new Audio('./swishpling' + (i + 1) + '.mp3');
-    audio.preload = 'auto';
-    audio.load();
-    return audio;
+/* =========================================
+   LOW-LATENCY IPHONE SOUND ENGINE
+========================================= */
+
+const AudioContextClass =
+    window.AudioContext || window.webkitAudioContext;
+
+const swishAudioContext = new AudioContextClass({
+    latencyHint: 'interactive'
 });
 
-// PLAY SOUND WITHOUT CREATING A NEW AUDIO OBJECT
+const swishBuffers = new Array(9).fill(null);
+
+let swishAudioReady = false;
+
+// Download and decode all 9 MP3 files
+async function loadSwishSounds() {
+
+    try {
+
+        const promises = Array.from({ length: 9 }, async (_, i) => {
+
+            const number = i + 1;
+
+            const response = await fetch(
+                './swishpling' + number + '.mp3'
+            );
+
+            if (!response.ok) {
+                throw new Error('Could not load sound ' + number);
+            }
+
+            const arrayBuffer = await response.arrayBuffer();
+
+            const decodedAudio =
+                await swishAudioContext.decodeAudioData(arrayBuffer);
+
+            swishBuffers[i] = decodedAudio;
+
+        });
+
+        await Promise.all(promises);
+
+        swishAudioReady = true;
+
+        console.log('All 9 Swish sounds are ready!');
+
+    } catch (error) {
+
+        console.error('Sound loading failed:', error);
+
+    }
+
+}
+
+// Start loading immediately
+loadSwishSounds();
+
+
+// Unlock audio on iPhone after user interaction
+function unlockSwishAudio() {
+
+    if (swishAudioContext.state === 'suspended') {
+
+        swishAudioContext.resume().catch(error => {
+            console.error('Audio unlock failed:', error);
+        });
+
+    }
+
+}
+
+document.addEventListener(
+    'pointerdown',
+    unlockSwishAudio,
+    { passive: true }
+);
+
+
+// PLAY THE CORRECT SOUND
 function pressSoundBox(number) {
-    const sound = swishSounds[number - 1];
 
-    if (!sound) return;
+    if (!swishAudioReady) {
+        console.log('Sounds are still loading...');
+        return;
+    }
 
-    sound.pause();
-    sound.currentTime = 0;
+    const buffer = swishBuffers[number - 1];
 
-    sound.play().catch(error => {
-        console.log('Sound error:', error);
-    });
+    if (!buffer) return;
+
+    const source = swishAudioContext.createBufferSource();
+
+    source.buffer = buffer;
+
+    source.connect(swishAudioContext.destination);
+
+    // Play immediately
+    source.start(0);
+
+    source.onended = () => {
+        source.disconnect();
+    };
+
 }
 </script>
 </body>
