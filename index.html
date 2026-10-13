@@ -73,6 +73,8 @@ button { cursor:pointer; }
 .confirmation-brand { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); display:flex; align-items:center; justify-content:center; }
 .confirmation-logo { display:block; width:115px; height:auto; object-fit:contain; }
 .confirmation-close { position:absolute; right:16px; top:50%; transform:translateY(-50%); width:58px; height:58px; min-width:58px; min-height:58px; border-radius:50%; display:flex; align-items:center; justify-content:center; padding:0; margin:0; font-size:36px; font-weight:400; line-height:1; background:#243F63; color:#7EBEE2; border:1px solid #30425D; cursor:pointer; }
+/* Positioned overlay for touch particles */
+.click-particle-layer { position:absolute; inset:0; width:100%; height:100%; overflow:hidden; pointer-events:none; z-index:9; contain:layout paint; }
 /* OPTIMIZED IPHONE PARTICLES */
 
 .click-particle {
@@ -113,11 +115,7 @@ button { cursor:pointer; }
     animation: randomIdleParticle var(--duration) linear forwards;
 }
 
-.confirmation-particles,
-.click-particle-layer {
-    contain: layout paint;
-    pointer-events: none;
-}
+.confirmation-particles { contain: layout paint; pointer-events: none; }
 @keyframes clickParticleFly { 0% { transform:translate(-50%,-50%) scale(1); opacity:1; } 100% { transform:translate(calc(-50% + var(--moveX)),calc(-50% + var(--moveY))) scale(0); opacity:0; } }
 /* Custom confirmation: separate style, original untouched */
 .custom-mode .confirmation-green { height:44%; }
@@ -178,15 +176,11 @@ button { cursor:pointer; }
 }
 /* PRESS EFFECT */
 .sound-box:active {
-background: rgba(255, 255, 255, 0.12);
+background: transparent;
 }
 /* iPHONE PERFORMANCE OPTIMIZATION */
 
-.confirmation-particles,
-.click-particle-layer {
-    contain: layout paint;
-    pointer-events: none;
-}
+.confirmation-particles { contain: layout paint; pointer-events: none; }
 
 .idle-particle,
 .click-particle {
@@ -195,11 +189,11 @@ background: rgba(255, 255, 255, 0.12);
 }
 
 .confirmation-soundpad {
-    touch-action: manipulation;
+    touch-action: none;
 }
 
 .sound-box {
-    touch-action: manipulation;
+    touch-action: none;
     -webkit-appearance: none;
     appearance: none;
 }
@@ -239,21 +233,21 @@ swishscreen: `
 <!-- INVISIBLE SOUND PAD -->
 <div class="confirmation-soundpad">
 
-    <button class="sound-box" onpointerdown="pressSoundBox(1)"></button>
-    <button class="sound-box" onpointerdown="pressSoundBox(2)"></button>
-    <button class="sound-box" onpointerdown="pressSoundBox(3)"></button>
+    <button class="sound-box" data-sound="1" aria-label="Sound 1"></button>
+    <button class="sound-box" data-sound="2" aria-label="Sound 2"></button>
+    <button class="sound-box" data-sound="3" aria-label="Sound 3"></button>
 
-    <button class="sound-box" onpointerdown="pressSoundBox(4)"></button>
-    <button class="sound-box" onpointerdown="pressSoundBox(5)"></button>
-    <button class="sound-box" onpointerdown="pressSoundBox(6)"></button>
+    <button class="sound-box" data-sound="4" aria-label="Sound 4"></button>
+    <button class="sound-box" data-sound="5" aria-label="Sound 5"></button>
+    <button class="sound-box" data-sound="6" aria-label="Sound 6"></button>
 
-    <button class="sound-box" onpointerdown="pressSoundBox(7)"></button>
-    <button class="sound-box" onpointerdown="pressSoundBox(8)"></button>
-    <button class="sound-box" onpointerdown="pressSoundBox(9)"></button>
+    <button class="sound-box" data-sound="7" aria-label="Sound 7"></button>
+    <button class="sound-box" data-sound="8" aria-label="Sound 8"></button>
+    <button class="sound-box" data-sound="9" aria-label="Sound 9"></button>
 
 </div>
     <svg class="confirmation-check" viewBox="0 0 64 64" fill="none"><circle cx="30" cy="34" r="25" stroke="white" stroke-opacity=".5" stroke-width="3"/><path d="M18 33 L27 42 L57 12" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    <div class="confirmation-message">Your payment has been sent!</div>
+    <div class="confirmation-message">Demo payment preview</div>
   </div>
   <div class="confirmation-date" id="swishDateTime"></div>
   <div class="confirmation-card">
@@ -349,9 +343,10 @@ function goToSwishScreen() {
    if(customText.trim()) { const extra=document.createElement('div'); extra.className='confirmation-extra'; extra.textContent=customText; document.getElementById('swishPhone').before(extra); }
    const reference=document.createElement('div'); reference.className='confirmation-reference';
    const label=document.createElement('span'); label.className='confirmation-reference-label'; label.textContent='Reference';
-   const value=document.createElement('span'); value.className='confirmation-reference-value'; value.textContent='1834 8495 7759 7162';
+   const value=document.createElement('span'); value.className='confirmation-reference-value'; value.textContent='Demo only';
    reference.append(label,value);
    const footer=screen.querySelector('.confirmation-footer'); footer.before(reference);
+   const demoLabel=document.createElement('div'); demoLabel.className='confirmation-demo-label'; demoLabel.textContent='DEMO PREVIEW · NO PAYMENT SENT'; footer.before(demoLabel);
  }
  updateSwishDateTime();
  startIdleParticles();
@@ -493,191 +488,97 @@ function pressSoundBox(number) {
    OPTIMIZED PARTICLES + SLIDE SOUND
 ========================================= */
 
-let particleHoldInterval = null;
-let particlePointerPosition = null;
-let slideSoundTimer = null;
 let idleParticleInterval = null;
+let activeGesture = null;
+let lastParticleAt = 0;
+let slidePlaying = false;
+const SLIDE_THRESHOLD = 12;
 
-
-// CREATE LIGHTWEIGHT CLICK PARTICLES
-
-function createClickParticles(clientX, clientY, amount = 5) {
-
+function createClickParticles(clientX, clientY, amount = 4) {
     const layer = document.getElementById('clickParticleLayer');
-
     if (!layer) return;
-
     const rect = layer.getBoundingClientRect();
-
-    const x = clientX - rect.left;
-    const y = clientY - rect.top;
-
+    const x = clientX - rect.left, y = clientY - rect.top;
     const fragment = document.createDocumentFragment();
-
     for (let i = 0; i < amount; i++) {
-
         const particle = document.createElement('span');
-
         particle.className = 'click-particle';
-
         const angle = Math.random() * Math.PI * 2;
         const distance = 20 + Math.random() * 65;
-
         particle.style.left = x + 'px';
         particle.style.top = y + 'px';
-
-        particle.style.setProperty(
-            '--moveX',
-            Math.cos(angle) * distance + 'px'
-        );
-
-        particle.style.setProperty(
-            '--moveY',
-            Math.sin(angle) * distance + 'px'
-        );
-
-        particle.style.setProperty(
-            '--size',
-            (3 + Math.random() * 3) + 'px'
-        );
-
-        particle.style.setProperty(
-            '--duration',
-            (450 + Math.random() * 350) + 'ms'
-        );
-
+        particle.style.setProperty('--moveX', Math.cos(angle) * distance + 'px');
+        particle.style.setProperty('--moveY', Math.sin(angle) * distance + 'px');
+        particle.style.setProperty('--size', (3 + Math.random() * 3) + 'px');
+        particle.style.setProperty('--duration', (450 + Math.random() * 350) + 'ms');
+        particle.addEventListener('animationend', () => particle.remove(), {once:true});
         fragment.appendChild(particle);
-
-        particle.addEventListener(
-            'animationend',
-            () => particle.remove(),
-            { once: true }
-        );
-
     }
-
     layer.appendChild(fragment);
-
 }
 
-
-// START PARTICLES AND SLIDE SOUND
-
-function startParticleHold(event) {
-
-    if (particleHoldInterval !== null) return;
-
-    if (event.pointerType === 'mouse' && event.button !== 0) return;
-
-    particlePointerPosition = {
-        x: event.clientX,
-        y: event.clientY
-    };
-
-    createClickParticles(event.clientX, event.clientY, 7);
-
-    // Start slide sound
+function startSlideSound() {
+    if (slidePlaying) return;
+    slidePlaying = true;
     const sound = document.getElementById('paymentSlideSound');
-
-    if (sound) {
-
-        sound.pause();
-        sound.currentTime = 0;
-        sound.volume = 0;
-
-        sound.play().catch(() => {});
-
-        clearTimeout(slideSoundTimer);
-
-        slideSoundTimer = setTimeout(() => {
-
-            if (particleHoldInterval !== null) {
-                sound.volume = 1;
-            }
-
-        }, 250);
-
-    }
-
-    // Generate fewer particles to keep iPhone smooth
-    particleHoldInterval = setInterval(() => {
-
-        if (!particlePointerPosition) return;
-
-        createClickParticles(
-            particlePointerPosition.x,
-            particlePointerPosition.y,
-            3
-        );
-
-    }, 120);
-
+    if (!sound) return;
+    sound.volume = 1;
+    sound.currentTime = 0;
+    sound.play().catch(error => console.log('Slide audio:', error));
 }
-
-
-// FOLLOW FINGER
-
-function moveParticleHold(event) {
-
-    if (particleHoldInterval === null) return;
-
-    particlePointerPosition = {
-        x: event.clientX,
-        y: event.clientY
-    };
-
+function stopSlideSound() {
+    slidePlaying = false;
+    const sound = document.getElementById('paymentSlideSound');
+    if (sound) { sound.pause(); sound.currentTime = 0; }
 }
-
-
-// STOP PARTICLES AND SLIDE SOUND
-
 function stopParticleHold() {
-
-    if (particleHoldInterval !== null) {
-
-        clearInterval(particleHoldInterval);
-
-        particleHoldInterval = null;
-
-    }
-
-    particlePointerPosition = null;
-
-    clearTimeout(slideSoundTimer);
-    slideSoundTimer = null;
-
-    const sound = document.getElementById('paymentSlideSound');
-
-    if (sound) {
-
-        sound.pause();
-        sound.currentTime = 0;
-
-    }
-
+    activeGesture = null;
+    stopSlideSound();
 }
-
-
-// TOUCH EVENTS
 
 document.addEventListener('pointerdown', event => {
-
-    if (event.target.closest('.confirmation-green')) {
-
-        startParticleHold(event);
-
-    }
-
+    const zone = event.target.closest('.sound-box');
+    if (!zone || activeGesture || (event.pointerType === 'mouse' && event.button !== 0)) return;
+    activeGesture = {
+        id:event.pointerId, x:event.clientX, y:event.clientY,
+        lastX:event.clientX, lastY:event.clientY,
+        sound:Number(zone.dataset.sound), sliding:false
+    };
+    // Pointer capture ensures release is detected even when dragging outside a box.
+    zone.setPointerCapture?.(event.pointerId);
 });
 
-document.addEventListener('pointermove', moveParticleHold);
+document.addEventListener('pointermove', event => {
+    const gesture = activeGesture;
+    if (!gesture || gesture.id !== event.pointerId) return;
+    const distance = Math.hypot(event.clientX - gesture.x, event.clientY - gesture.y);
+    if (!gesture.sliding && distance >= SLIDE_THRESHOLD) {
+        gesture.sliding = true;
+        startSlideSound();
+        createClickParticles(event.clientX, event.clientY, 6);
+    }
+    if (gesture.sliding) {
+        const now = performance.now();
+        if (now - lastParticleAt >= 45 && Math.hypot(event.clientX-gesture.lastX,event.clientY-gesture.lastY)>2) {
+            createClickParticles(event.clientX,event.clientY,3);
+            lastParticleAt = now;
+        }
+    }
+    gesture.lastX = event.clientX;
+    gesture.lastY = event.clientY;
+});
 
-document.addEventListener('pointerup', stopParticleHold);
-
+document.addEventListener('pointerup', event => {
+    const gesture = activeGesture;
+    if (!gesture || gesture.id !== event.pointerId) return;
+    if (!gesture.sliding) {
+        pressSoundBox(gesture.sound);
+        createClickParticles(event.clientX,event.clientY,5);
+    }
+    stopParticleHold();
+});
 document.addEventListener('pointercancel', stopParticleHold);
-
 window.addEventListener('blur', stopParticleHold);
-
 
 // LIGHTWEIGHT BACKGROUND PARTICLES
 
