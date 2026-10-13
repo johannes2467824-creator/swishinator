@@ -60,7 +60,6 @@ button { cursor:pointer; }
 .confirmation-green { position:absolute; top:0; left:0; width:100%; height:444px; overflow:hidden; touch-action:none; }
 .confirmation-green svg.green-shape { position:absolute; inset:0; width:100%; height:100%; }
 .confirmation-particles { position:absolute; inset:0; width:100%; height:100%; overflow:hidden; pointer-events:none; z-index:1; }
-.idle-particle { position:absolute; width:var(--size); height:var(--size); background:white; border-radius:50%; opacity:0; box-shadow:0 0 6px rgba(255,255,255,.9),0 0 14px rgba(255,255,255,.5); pointer-events:none; animation:randomIdleParticle var(--duration) linear forwards; }
 @keyframes randomIdleParticle { 0% { transform:translate(0,0) scale(.5); opacity:0; } 12%,75% { opacity:var(--brightness); } 100% { transform:translate(var(--moveX),var(--moveY)) scale(1.3); opacity:0; } }
 .confirmation-check { position:absolute; top:170px; left:50%; transform:translateX(-50%); width:90px; height:90px; z-index:2; }
 .confirmation-message { position:absolute; top:275px; left:0; width:100%; text-align:center; font-size:25px; font-weight:400; z-index:2; }
@@ -74,7 +73,8 @@ button { cursor:pointer; }
 .confirmation-brand { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); display:flex; align-items:center; justify-content:center; }
 .confirmation-logo { display:block; width:115px; height:auto; object-fit:contain; }
 .confirmation-close { position:absolute; right:16px; top:50%; transform:translateY(-50%); width:58px; height:58px; min-width:58px; min-height:58px; border-radius:50%; display:flex; align-items:center; justify-content:center; padding:0; margin:0; font-size:36px; font-weight:400; line-height:1; background:#243F63; color:#7EBEE2; border:1px solid #30425D; cursor:pointer; }
-.click-particle-layer { position:absolute; inset:0; width:100%; height:100%; overflow:hidden; pointer-events:none; z-index:9999; }
+/* OPTIMIZED IPHONE PARTICLES */
+
 .click-particle {
     position: absolute;
 
@@ -84,14 +84,39 @@ button { cursor:pointer; }
     background: white;
     border-radius: 50%;
 
-    /* Only one glow instead of three */
-    box-shadow: 0 0 5px rgba(255,255,255,.7);
+    box-shadow: 0 0 4px rgba(255,255,255,.65);
 
     pointer-events: none;
 
     will-change: transform, opacity;
 
     animation: clickParticleFly var(--duration) ease-out forwards;
+}
+
+.idle-particle {
+    position: absolute;
+
+    width: var(--size);
+    height: var(--size);
+
+    background: white;
+    border-radius: 50%;
+
+    opacity: 0;
+
+    box-shadow: 0 0 4px rgba(255,255,255,.5);
+
+    pointer-events: none;
+
+    will-change: transform, opacity;
+
+    animation: randomIdleParticle var(--duration) linear forwards;
+}
+
+.confirmation-particles,
+.click-particle-layer {
+    contain: layout paint;
+    pointer-events: none;
 }
 @keyframes clickParticleFly { 0% { transform:translate(-50%,-50%) scale(1); opacity:1; } 100% { transform:translate(calc(-50% + var(--moveX)),calc(-50% + var(--moveY))) scale(0); opacity:0; } }
 /* Custom confirmation: separate style, original untouched */
@@ -329,6 +354,7 @@ function goToSwishScreen() {
    const footer=screen.querySelector('.confirmation-footer'); footer.before(reference);
  }
  updateSwishDateTime();
+ startIdleParticles();
 }
 function updateSwishDateTime() {
  const display=document.getElementById('swishDateTime'); if(!display)return;
@@ -361,69 +387,7 @@ function browseContacts(direction) {
  if(index===-1) index=direction===1?0:contacts.length-1; else index=(index+direction+contacts.length)%contacts.length;
  selector.value=contacts[index].phone; selectSavedContact();
 }
-let particleHoldInterval=null, particlePointerPosition=null, slideSoundTimer=null;
-function createClickParticles(clientX,clientY,amount=18) {
- const layer=document.getElementById('clickParticleLayer'); if(!layer)return;
- const rect=layer.getBoundingClientRect(), x=clientX-rect.left, y=clientY-rect.top;
- const dateElement=document.getElementById('swishDateTime'); if(dateElement&&clientY>=dateElement.getBoundingClientRect().top)return;
- for(let i=0;i<amount;i++) {
-  const particle=document.createElement('span'); particle.className='click-particle';
-  const angle=Math.random()*Math.PI*2, distance=25+Math.random()*95;
-  const moveX=Math.cos(angle)*distance, moveY=Math.sin(angle)*distance;
-  particle.style.left=x+'px'; particle.style.top=y+'px';
-  particle.style.setProperty('--moveX',moveX+'px'); particle.style.setProperty('--moveY',moveY+'px');
-  particle.style.setProperty('--size',(4+Math.random()*6)+'px'); particle.style.setProperty('--duration',(650+Math.random()*850)+'ms');
-  layer.appendChild(particle); particle.addEventListener('animationend',()=>particle.remove(),{once:true});
- }
-}
-function startParticleHold(event) {
- if(particleHoldInterval!==null)return; if(event.pointerType==='mouse'&&event.button!==0)return;
- const sound=document.getElementById('paymentSlideSound');
- if(sound) { sound.pause(); sound.currentTime=0; sound.volume=0; sound.play().catch(error=>console.log('Slide sound error:',error)); clearTimeout(slideSoundTimer); slideSoundTimer=setTimeout(()=>{ if(particleHoldInterval!==null)sound.volume=1; },250); }
- particlePointerPosition={x:event.clientX,y:event.clientY}; createClickParticles(event.clientX,event.clientY,8);
-particleHoldInterval=setInterval(()=>{
-    if(particlePointerPosition) {
-        createClickParticles(
-            particlePointerPosition.x,
-            particlePointerPosition.y,
-            3
-        );
-    }
-},120);
-}
-function moveParticleHold(event) { if(particleHoldInterval!==null)particlePointerPosition={x:event.clientX,y:event.clientY}; }
-function stopParticleHold() {
- if(particleHoldInterval!==null) { clearInterval(particleHoldInterval); particleHoldInterval=null; }
- particlePointerPosition=null; clearTimeout(slideSoundTimer); slideSoundTimer=null;
- const sound=document.getElementById('paymentSlideSound'); if(sound) { sound.pause(); sound.currentTime=0; }
-}
-// Particle touch effects temporarily disabled for performance testing.
-window.addEventListener('blur',stopParticleHold);
-let idleParticleInterval=null;
-function createIdleParticle() {
- const container=document.querySelector('.confirmation-particles'); if(!container)return;
- const particle=document.createElement('span'); particle.className='idle-particle';
- const angle=Math.random()*Math.PI*2, distance=30+Math.random()*140;
- particle.style.left=Math.random()*container.clientWidth+'px'; particle.style.top=Math.random()*container.clientHeight+'px';
- particle.style.setProperty('--size',(3+Math.random()*6)+'px');
- particle.style.setProperty('--moveX',Math.cos(angle)*distance+'px'); particle.style.setProperty('--moveY',Math.sin(angle)*distance+'px');
- particle.style.setProperty('--duration',(2500+Math.random()*5500)+'ms'); particle.style.setProperty('--brightness',.35+Math.random()*.6);
- container.appendChild(particle); particle.addEventListener('animationend',()=>particle.remove(),{once:true});
-}
-function startIdleParticles() {
- clearInterval(idleParticleInterval); const container=document.querySelector('.confirmation-particles'); if(!container)return;
- container.replaceChildren(); for(let i=0;i<12;i++)createIdleParticle();
-idleParticleInterval=setInterval(()=>{
-    if(!document.querySelector('.confirmation-particles')) {
-        clearInterval(idleParticleInterval);
-        idleParticleInterval=null;
-        return;
-    }
 
-    createIdleParticle();
-
-},450);
-}
 // PRELOAD ALL NINE SOUNDS
 /* =========================================
    LOW-LATENCY IPHONE SOUND ENGINE
@@ -523,6 +487,286 @@ function pressSoundBox(number) {
     source.onended = () => {
         source.disconnect();
     };
+
+}
+/* =========================================
+   OPTIMIZED PARTICLES + SLIDE SOUND
+========================================= */
+
+let particleHoldInterval = null;
+let particlePointerPosition = null;
+let slideSoundTimer = null;
+let idleParticleInterval = null;
+
+
+// CREATE LIGHTWEIGHT CLICK PARTICLES
+
+function createClickParticles(clientX, clientY, amount = 5) {
+
+    const layer = document.getElementById('clickParticleLayer');
+
+    if (!layer) return;
+
+    const rect = layer.getBoundingClientRect();
+
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
+
+    const fragment = document.createDocumentFragment();
+
+    for (let i = 0; i < amount; i++) {
+
+        const particle = document.createElement('span');
+
+        particle.className = 'click-particle';
+
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 20 + Math.random() * 65;
+
+        particle.style.left = x + 'px';
+        particle.style.top = y + 'px';
+
+        particle.style.setProperty(
+            '--moveX',
+            Math.cos(angle) * distance + 'px'
+        );
+
+        particle.style.setProperty(
+            '--moveY',
+            Math.sin(angle) * distance + 'px'
+        );
+
+        particle.style.setProperty(
+            '--size',
+            (3 + Math.random() * 3) + 'px'
+        );
+
+        particle.style.setProperty(
+            '--duration',
+            (450 + Math.random() * 350) + 'ms'
+        );
+
+        fragment.appendChild(particle);
+
+        particle.addEventListener(
+            'animationend',
+            () => particle.remove(),
+            { once: true }
+        );
+
+    }
+
+    layer.appendChild(fragment);
+
+}
+
+
+// START PARTICLES AND SLIDE SOUND
+
+function startParticleHold(event) {
+
+    if (particleHoldInterval !== null) return;
+
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
+
+    particlePointerPosition = {
+        x: event.clientX,
+        y: event.clientY
+    };
+
+    createClickParticles(event.clientX, event.clientY, 7);
+
+    // Start slide sound
+    const sound = document.getElementById('paymentSlideSound');
+
+    if (sound) {
+
+        sound.pause();
+        sound.currentTime = 0;
+        sound.volume = 0;
+
+        sound.play().catch(() => {});
+
+        clearTimeout(slideSoundTimer);
+
+        slideSoundTimer = setTimeout(() => {
+
+            if (particleHoldInterval !== null) {
+                sound.volume = 1;
+            }
+
+        }, 250);
+
+    }
+
+    // Generate fewer particles to keep iPhone smooth
+    particleHoldInterval = setInterval(() => {
+
+        if (!particlePointerPosition) return;
+
+        createClickParticles(
+            particlePointerPosition.x,
+            particlePointerPosition.y,
+            3
+        );
+
+    }, 120);
+
+}
+
+
+// FOLLOW FINGER
+
+function moveParticleHold(event) {
+
+    if (particleHoldInterval === null) return;
+
+    particlePointerPosition = {
+        x: event.clientX,
+        y: event.clientY
+    };
+
+}
+
+
+// STOP PARTICLES AND SLIDE SOUND
+
+function stopParticleHold() {
+
+    if (particleHoldInterval !== null) {
+
+        clearInterval(particleHoldInterval);
+
+        particleHoldInterval = null;
+
+    }
+
+    particlePointerPosition = null;
+
+    clearTimeout(slideSoundTimer);
+    slideSoundTimer = null;
+
+    const sound = document.getElementById('paymentSlideSound');
+
+    if (sound) {
+
+        sound.pause();
+        sound.currentTime = 0;
+
+    }
+
+}
+
+
+// TOUCH EVENTS
+
+document.addEventListener('pointerdown', event => {
+
+    if (event.target.closest('.confirmation-green')) {
+
+        startParticleHold(event);
+
+    }
+
+});
+
+document.addEventListener('pointermove', moveParticleHold);
+
+document.addEventListener('pointerup', stopParticleHold);
+
+document.addEventListener('pointercancel', stopParticleHold);
+
+window.addEventListener('blur', stopParticleHold);
+
+
+// LIGHTWEIGHT BACKGROUND PARTICLES
+
+function createIdleParticle() {
+
+    const container = document.querySelector('.confirmation-particles');
+
+    if (!container) return;
+
+    const particle = document.createElement('span');
+
+    particle.className = 'idle-particle';
+
+    const angle = Math.random() * Math.PI * 2;
+    const distance = 20 + Math.random() * 70;
+
+    particle.style.left = Math.random() * container.clientWidth + 'px';
+
+    particle.style.top = Math.random() * container.clientHeight + 'px';
+
+    particle.style.setProperty(
+        '--size',
+        (2 + Math.random() * 3) + 'px'
+    );
+
+    particle.style.setProperty(
+        '--moveX',
+        Math.cos(angle) * distance + 'px'
+    );
+
+    particle.style.setProperty(
+        '--moveY',
+        Math.sin(angle) * distance + 'px'
+    );
+
+    particle.style.setProperty(
+        '--duration',
+        (2500 + Math.random() * 2500) + 'ms'
+    );
+
+    particle.style.setProperty(
+        '--brightness',
+        0.3 + Math.random() * 0.4
+    );
+
+    container.appendChild(particle);
+
+    particle.addEventListener(
+        'animationend',
+        () => particle.remove(),
+        { once: true }
+    );
+
+}
+
+
+// START BACKGROUND PARTICLES
+
+function startIdleParticles() {
+
+    clearInterval(idleParticleInterval);
+
+    const container = document.querySelector('.confirmation-particles');
+
+    if (!container) return;
+
+    container.replaceChildren();
+
+    for (let i = 0; i < 10; i++) {
+
+        createIdleParticle();
+
+    }
+
+    idleParticleInterval = setInterval(() => {
+
+        if (!document.querySelector('.confirmation-particles')) {
+
+            clearInterval(idleParticleInterval);
+
+            idleParticleInterval = null;
+
+            return;
+
+        }
+
+        createIdleParticle();
+
+    }, 450);
 
 }
 </script>
