@@ -214,17 +214,17 @@ swishscreen: `
 <!-- INVISIBLE SOUND PAD -->
 <div class="confirmation-soundpad">
 
-    <button class="sound-box" onclick="pressSoundBox(1)" aria-label="Sound 1"></button>
-    <button class="sound-box" onclick="pressSoundBox(2)" aria-label="Sound 2"></button>
-    <button class="sound-box" onclick="pressSoundBox(3)" aria-label="Sound 3"></button>
+    <button class="sound-box" onpointerdown="pressSoundBox(1)"></button>
+    <button class="sound-box" onpointerdown="pressSoundBox(2)"></button>
+    <button class="sound-box" onpointerdown="pressSoundBox(3)"></button>
 
-    <button class="sound-box" onclick="pressSoundBox(4)" aria-label="Sound 4"></button>
-    <button class="sound-box" onclick="pressSoundBox(5)" aria-label="Sound 5"></button>
-    <button class="sound-box" onclick="pressSoundBox(6)" aria-label="Sound 6"></button>
+    <button class="sound-box" onpointerdown="pressSoundBox(4)"></button>
+    <button class="sound-box" onpointerdown="pressSoundBox(5)"></button>
+    <button class="sound-box" onpointerdown="pressSoundBox(6)"></button>
 
-    <button class="sound-box" onclick="pressSoundBox(7)" aria-label="Sound 7"></button>
-    <button class="sound-box" onclick="pressSoundBox(8)" aria-label="Sound 8"></button>
-    <button class="sound-box" onclick="pressSoundBox(9)" aria-label="Sound 9"></button>
+    <button class="sound-box" onpointerdown="pressSoundBox(7)"></button>
+    <button class="sound-box" onpointerdown="pressSoundBox(8)"></button>
+    <button class="sound-box" onpointerdown="pressSoundBox(9)"></button>
 
 </div>
     <svg class="confirmation-check" viewBox="0 0 64 64" fill="none"><circle cx="30" cy="34" r="25" stroke="white" stroke-opacity=".5" stroke-width="3"/><path d="M18 33 L27 42 L57 12" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -507,11 +507,6 @@ document.addEventListener(
 // PLAY THE CORRECT SOUND
 function pressSoundBox(number) {
 
-    if (!swishAudioReady) {
-        console.log('Sounds are still loading...');
-        return;
-    }
-
     const buffer = swishBuffers[number - 1];
 
     if (!buffer) return;
@@ -522,8 +517,8 @@ function pressSoundBox(number) {
 
     source.connect(swishAudioContext.destination);
 
-    // Play immediately
-    source.start(0);
+    // Start at the earliest available audio time
+    source.start();
 
     source.onended = () => {
         source.disconnect();
