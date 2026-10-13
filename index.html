@@ -93,6 +93,51 @@ button { cursor:pointer; }
 .confirmation-reference-value { color:white; text-align:right; font-size:13px; }
 .custom-mode .confirmation-demo-label { position:absolute; bottom:100px; left:0; width:100%; color:#8291A8; font-size:11px; text-align:center; }
 .custom-mode .confirmation-footer { bottom:5px; }
+/* SECRET SOUND PAD */
+
+.confirmation-soundpad {
+    position: absolute;
+
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+
+    z-index: 5;
+}
+/* INDIVIDUAL BOXES */
+.sound-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: transparent;
+    border: none;
+    outline: none;
+    box-shadow: none;
+
+    color: transparent;
+    font-size: 0;
+
+    padding: 0;
+    margin: 0;
+
+    cursor: pointer;
+
+    -webkit-tap-highlight-color: transparent;
+}
+
+.sound-box:active {
+    background: transparent;
+}
+/* PRESS EFFECT */
+.sound-box:active {
+background: rgba(255, 255, 255, 0.12);
+}
 </style>
 </head>
 <body>
@@ -125,6 +170,23 @@ swishscreen: `
       <path d="M 0 0 H 390 V 399 Q 195 449 0 399 Z" fill="url(#greenGradient)"/>
     </svg>
     <div class="confirmation-particles"></div>
+    <!-- 3x3 SOUND PAD FÖR SWISH PLINGEN -->
+<!-- INVISIBLE SOUND PAD -->
+<div class="confirmation-soundpad">
+
+    <button class="sound-box" onclick="pressSoundBox(1)" aria-label="Sound 1"></button>
+    <button class="sound-box" onclick="pressSoundBox(2)" aria-label="Sound 2"></button>
+    <button class="sound-box" onclick="pressSoundBox(3)" aria-label="Sound 3"></button>
+
+    <button class="sound-box" onclick="pressSoundBox(4)" aria-label="Sound 4"></button>
+    <button class="sound-box" onclick="pressSoundBox(5)" aria-label="Sound 5"></button>
+    <button class="sound-box" onclick="pressSoundBox(6)" aria-label="Sound 6"></button>
+
+    <button class="sound-box" onclick="pressSoundBox(7)" aria-label="Sound 7"></button>
+    <button class="sound-box" onclick="pressSoundBox(8)" aria-label="Sound 8"></button>
+    <button class="sound-box" onclick="pressSoundBox(9)" aria-label="Sound 9"></button>
+
+</div>
     <svg class="confirmation-check" viewBox="0 0 64 64" fill="none"><circle cx="30" cy="34" r="25" stroke="white" stroke-opacity=".5" stroke-width="3"/><path d="M18 33 L27 42 L57 12" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     <div class="confirmation-message">Your payment has been sent!</div>
   </div>
@@ -280,6 +342,22 @@ function startIdleParticles() {
  clearInterval(idleParticleInterval); const container=document.querySelector('.confirmation-particles'); if(!container)return;
  container.replaceChildren(); for(let i=0;i<35;i++)createIdleParticle();
  idleParticleInterval=setInterval(()=>{ if(!document.querySelector('.confirmation-particles')) { clearInterval(idleParticleInterval); idleParticleInterval=null; return; } createIdleParticle(); createIdleParticle(); },180);
+}
+function pressSoundBox(number) {
+
+    // Only allow boxes 1–9
+    if (!Number.isInteger(number) || number < 1 || number > 9) return;
+
+    // Get the sound belonging to the pressed box
+    const sound = new Audio('./swishpling' + number + '.mp3');
+
+    sound.volume = 1;
+
+    // Play the sound
+    sound.play().catch(error => {
+        console.log('Sound error:', error);
+    });
+
 }
 </script>
 </body>
