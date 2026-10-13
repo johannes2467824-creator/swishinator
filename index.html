@@ -463,26 +463,44 @@ document.addEventListener(
 );
 
 
-// PLAY THE CORRECT SOUND
+// MIX MULTIPLE QUICK TAPS WITHOUT OVERLOADING THE OUTPUT
+const plingCompressor = swishAudioContext.createDynamicsCompressor();
+plingCompressor.threshold.value = -18;
+plingCompressor.knee.value = 12;
+plingCompressor.ratio.value = 6;
+plingCompressor.attack.value = 0.003;
+plingCompressor.release.value = 0.18;
+plingCompressor.connect(swishAudioContext.destination);
+
+const activePlings = new Set();
+const MAX_PLINGS = 8;
+
 function pressSoundBox(number) {
-
     const buffer = swishBuffers[number - 1];
-
     if (!buffer) return;
 
+    // Every tap gets a NEW source, so rapid taps can overlap naturally.
+    // Cap the number of voices to avoid distortion on phone speakers.
+    if (activePlings.size >= MAX_PLINGS) {
+        const oldest = activePlings.values().next().value;
+        if (oldest) {
+            try { oldest.stop(); } catch (_) {}
+        }
+    }
+
     const source = swishAudioContext.createBufferSource();
-
+    const volume = swishAudioContext.createGain();
     source.buffer = buffer;
-
-    source.connect(swishAudioContext.destination);
-
-    // Start at the earliest available audio time
-    source.start();
-
+    volume.gain.value = 0.38;
+    source.connect(volume);
+    volume.connect(plingCompressor);
+    activePlings.add(source);
     source.onended = () => {
+        activePlings.delete(source);
         source.disconnect();
+        volume.disconnect();
     };
-
+    source.start();
 }
 /* =========================================
    OPTIMIZED PARTICLES + SLIDE SOUND
