@@ -819,6 +819,21 @@ background: transparent;
 
 
 
+/* Custom details: let the intro check and text reach their actual final positions. */
+.custom-mode .green-intro.shrink .green-intro-content {
+    top: var(--custom-intro-check-top, 170px);
+}
+
+.custom-mode .green-intro-text {
+    position: relative;
+    top: 0;
+    transition: top 1100ms cubic-bezier(.22,1,.36,1);
+}
+
+.custom-mode .green-intro.shrink .green-intro-text {
+    top: var(--custom-intro-text-offset, 0px);
+}
+
 .green-intro-check {
 
     width: 90px;
@@ -1209,19 +1224,11 @@ function animateGreenCurve(path, duration = 1100) {
 
 
 
-    // Match the final green section height
-
-    const finalHeight = screen.classList.contains('custom-mode')
-
-        ? screenHeight * 0.44
-
-        : 444;
-
-
-
-    const finalEdge = finalHeight * (399 / 444);
-
-    const finalDepth = finalHeight * (50 / 444);
+    // Match the real final SVG path geometry (its viewBox is 390 x 430).
+    // This keeps the curve aligned with the finished confirmation screen.
+    const finalHeight = screen.querySelector('.confirmation-green').getBoundingClientRect().height;
+    const finalEdge = finalHeight * (399 / 430);
+    const finalDepth = finalHeight * (50 / 430);
 
 
 
@@ -1379,6 +1386,20 @@ function playGreenConfirmationIntro() {
 
 
 
+    // Custom mode has different checkmark AND text endpoints. Measure the actual
+    // final elements, rather than guessing percentages or changing the layout.
+    if (screen.classList.contains('custom-mode')) {
+        const screenRect = screen.getBoundingClientRect();
+        const checkRect = screen.querySelector('.confirmation-check').getBoundingClientRect();
+        const textRect = screen.querySelector('.confirmation-message').getBoundingClientRect();
+        const checkTop = checkRect.top - screenRect.top;
+        const messageTop = textRect.top - screenRect.top;
+        // Existing intro layout: 90px check + 22px gap - 7px text margin.
+        const textOffset = messageTop - (checkTop + checkRect.height + 22 - 7);
+        intro.style.setProperty('--custom-intro-check-top', `${checkTop}px`);
+        intro.style.setProperty('--custom-intro-text-offset', `${textOffset}px`);
+    }
+
     screen.appendChild(intro);
 
 
@@ -1407,7 +1428,7 @@ const greenPath = intro.querySelector('#animatedGreenPath');
 
 if (greenPath) {
 
-    animateGreenCurve(greenPath, 1100);
+    animateGreenCurve(greenPath, 850);
 
 }
 
