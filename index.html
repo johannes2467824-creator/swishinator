@@ -198,6 +198,246 @@ background: transparent;
     -webkit-appearance: none;
     appearance: none;
 }
+
+
+/* DEMO PAYMENT VERIFICATION SCREEN */
+
+.demo-verification {
+    position: absolute;
+    inset: 0;
+    z-index: 1000;
+
+    background: #0B131E;
+    overflow: hidden;
+
+    opacity: 1;
+    transition: opacity 550ms ease;
+}
+
+.demo-verification.fade-out {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* LOGO - CENTERED ON SCREEN */
+
+.verification-logo {
+    position: absolute;
+
+    width: 125px;
+    height: auto;
+    max-height: 180px;
+    object-fit: contain;
+
+    left: 50%;
+    top: 50%;
+
+    transform: translate(-50%, -50%);
+}
+
+/* LOADING DOTS AND TEXT */
+
+.verification-loading {
+    position: absolute;
+
+    left: 0;
+    width: 100%;
+
+    /* Approximately 4 cm below the middle on an iPhone */
+    top: calc(50% + 150px);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+}
+
+/* THREE BLUE BOUNCING DOTS */
+
+.verification-dots {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    gap: 9px;
+    height: 24px;
+}
+
+.verification-dots span {
+    width: 9px;
+    height: 9px;
+
+    border-radius: 50%;
+    background: #0077D2;
+
+    animation: verificationBounce 900ms ease-in-out infinite;
+}
+
+.verification-dots span:nth-child(2) {
+    animation-delay: 150ms;
+}
+
+.verification-dots span:nth-child(3) {
+    animation-delay: 300ms;
+}
+
+@keyframes verificationBounce {
+    0%, 60%, 100% {
+        transform: translateY(0);
+        opacity: .5;
+    }
+
+    30% {
+        transform: translateY(-11px);
+        opacity: 1;
+    }
+}
+
+/* SAME FONT AS CONFIRMATION DATE/TIME */
+
+.verification-text {
+    font-family: -apple-system, BlinkMacSystemFont,
+                 "Segoe UI", Arial, sans-serif;
+
+    font-size: 16px;
+    font-weight: 400;
+
+    color: #8291A8;
+
+    text-align: center;
+    letter-spacing: normal;
+
+    padding: 0 15px;
+}
+
+
+/* FULL-SCREEN GREEN INTRO */
+
+.confirmation-screen.intro-running .confirmation-check,
+.confirmation-screen.intro-running .confirmation-message {
+    opacity: 0;
+}
+
+.confirmation-screen.intro-running .confirmation-date,
+.confirmation-screen.intro-running .confirmation-card,
+.confirmation-screen.intro-running .confirmation-footer,
+.confirmation-screen.intro-running .confirmation-reference,
+.confirmation-screen.intro-running .confirmation-demo-label {
+    opacity: 0;
+    transform: translateY(100vh);
+}
+
+.confirmation-screen.intro-reveal .confirmation-date,
+.confirmation-screen.intro-reveal .confirmation-card,
+.confirmation-screen.intro-reveal .confirmation-footer,
+.confirmation-screen.intro-reveal .confirmation-reference,
+.confirmation-screen.intro-reveal .confirmation-demo-label {
+    opacity: 1;
+    transform: translateY(0);
+    transition:
+        transform 950ms cubic-bezier(.22,1,.36,1),
+        opacity 450ms ease;
+}
+
+.green-intro {
+    position: absolute;
+    inset: 0;
+    z-index: 900;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.green-intro-shape {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 110%;
+    overflow: hidden;
+    transition: height 950ms cubic-bezier(.22,1,.36,1);
+}
+
+.green-intro-shape svg.background-shape {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.green-intro.shrink .green-intro-shape {
+    height: 444px;
+}
+
+.green-intro-content {
+    position: absolute;
+    top: 43%;
+    left: 50%;
+    width: 100%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 22px;
+    transition: top 950ms cubic-bezier(.22,1,.36,1);
+}
+
+.green-intro.shrink .green-intro-content {
+    top: 215px;
+}
+
+.green-intro-check {
+    width: 90px;
+    height: 90px;
+    overflow: visible;
+}
+
+.green-intro-check circle,
+.green-intro-check path {
+    fill: none;
+    stroke: white;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.green-intro-check circle {
+    stroke-width: 3;
+    stroke-opacity: .5;
+    stroke-dasharray: 158;
+    stroke-dashoffset: 158;
+    animation: drawDemoCheck 800ms ease forwards;
+}
+
+.green-intro-check path {
+    stroke-width: 4;
+    stroke-dasharray: 65;
+    stroke-dashoffset: 65;
+    animation: drawDemoCheck 650ms ease 250ms forwards;
+}
+
+@keyframes drawDemoCheck {
+    to { stroke-dashoffset: 0; }
+}
+
+.green-intro-text {
+    color: white;
+    font-size: 25px;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(12px);
+    animation: introTextAppear 650ms ease 250ms forwards;
+}
+
+@keyframes introTextAppear {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.green-intro.finished {
+    opacity: 0;
+    transition: opacity 200ms ease;
+}
+
 </style>
 </head>
 <body>
@@ -280,7 +520,7 @@ swish: `
  <div id="customDetailsInput" style="display:none"><label>Additional recipient text<input class="field" id="customDetailsText" type="text" placeholder="Example: VALLENTUNA KOMMUN" autocomplete="off"></label><p class="custom-details-hint">In custom mode, phone numbers are displayed exactly as entered.</p></div>
 </div>
 <label>Amount (SEK)<input class="field" id="amount" type="number" min="0" step="0.01" placeholder="0.00"></label>
-<button class="primary" onclick="goToSwishScreen()">next</button>
+<button class="primary" onclick="startDemoVerification()">next</button>
 </div>`,
 scan: `<button class="back" onclick="showPage('home')">← Back</button><h1>Scan</h1><div class="scanframe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9V3h6M15 3h6v6M3 15v6h6M21 15v6h-6M7 7h3v3H7zM14 7h3v3h-3zM7 14h3v3H7zM14 14h2m2 0v3m-4 0h2"/></svg></div><p style="text-align:center">QR scanning is a visual demo only.</p>`
 };
@@ -326,6 +566,137 @@ function formatSwedishPhone(phone) {
  if(/^07\d{8}$/.test(digits)) return '+46 '+digits.slice(1,3)+' '+digits.slice(3,6)+' '+digits.slice(6,8)+' '+digits.slice(8,10);
  return phone;
 }
+
+let demoVerificationRunning = false;
+
+function playGreenConfirmationIntro() {
+
+    const screen = document.querySelector('.confirmation-screen');
+    if (!screen) return;
+
+    screen.classList.add('intro-running');
+
+    const intro = document.createElement('div');
+    intro.className = 'green-intro';
+
+    intro.innerHTML = `
+        <div class="green-intro-shape">
+            <svg class="background-shape"
+                 viewBox="0 0 390 430"
+                 preserveAspectRatio="none">
+                <defs>
+                    <linearGradient id="introGreenGradient"
+                        x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stop-color="#91B900"/>
+                        <stop offset="100%" stop-color="#198A29"/>
+                    </linearGradient>
+                </defs>
+
+                <path
+                    d="M 0 0 H 390 V 399 Q 195 449 0 399 Z"
+                    fill="url(#introGreenGradient)"
+                />
+            </svg>
+        </div>
+
+        <div class="green-intro-content">
+            <svg class="green-intro-check" viewBox="0 0 64 64">
+                <circle cx="30" cy="34" r="25"/>
+                <path d="M18 33 L27 42 L57 12"/>
+            </svg>
+
+            <div class="green-intro-text">
+                Demo payment preview
+            </div>
+        </div>
+    `;
+
+    screen.appendChild(intro);
+
+    // First: draw the checkmark and reveal the text.
+    setTimeout(() => {
+
+        // Then: shrink the green area while details rise.
+        intro.classList.add('shrink');
+        screen.classList.add('intro-reveal');
+
+    }, 1200);
+
+    // Settle into the existing confirmation layout.
+    setTimeout(() => {
+
+        screen.classList.remove('intro-running');
+
+        intro.classList.add('finished');
+
+        setTimeout(() => {
+            intro.remove();
+            screen.classList.remove('intro-reveal');
+        }, 200);
+
+    }, 2350);
+}
+
+function startDemoVerification() {
+
+    if (demoVerificationRunning) return;
+
+    demoVerificationRunning = true;
+
+    const overlay = document.createElement('div');
+
+    overlay.className = 'demo-verification';
+
+    
+overlay.innerHTML = `
+    <img
+        src="./swishloggan.png"
+        class="verification-logo"
+        alt="Demo app logo"
+    >
+
+    <div class="verification-loading">
+        <div class="verification-dots">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+
+        <div class="verification-text">
+            Verifying your demo payment...
+        </div>
+    </div>
+`;
+
+
+    document.querySelector('.screen').appendChild(overlay);
+
+    // Show loading animation for 2 seconds
+    setTimeout(() => {
+
+        // Prepare the confirmation screen underneath
+        
+    goToSwishScreen();
+
+    // Prepare the full-screen green animation underneath.
+    playGreenConfirmationIntro();
+
+    // Fade the verification overlay away.
+    requestAnimationFrame(() => {
+        overlay.classList.add('fade-out');
+    });
+
+
+        // Remove overlay after fade finishes
+        setTimeout(() => {
+            overlay.remove();
+            demoVerificationRunning = false;
+        }, 550);
+
+    }, 2000);
+
+}
+
 function goToSwishScreen() {
  const recipient=document.getElementById('recipient')?.value || '';
  const phone=document.getElementById('phoneNumber')?.value || '';
