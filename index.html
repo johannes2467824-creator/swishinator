@@ -116,7 +116,8 @@ button { cursor:pointer; }
 }
 
 .confirmation-particles { contain: layout paint; pointer-events: none; }
-@keyframes clickParticleFly { 0% { transform:translate(-50%,-50%) scale(1); opacity:1; } 100% { transform:translate(calc(-50% + var(--moveX)),calc(-50% + var(--moveY))) scale(0); opacity:0; } }
+@keyframes clickParticleFly { 0% { transform:translate(-50%,-50%) scale(1); opacity:1; } 35% { opacity:.9; } 75% { opacity:.4; } 100% { transform:translate(calc(-50% + var(--moveX)),calc(-50% + var(--moveY))) scale(.35); opacity:0; } }
+.idle-particle.idle-glow { filter:blur(3px); box-shadow:0 0 12px 4px rgba(255,255,255,.28); }
 /* Custom confirmation: separate style, original untouched */
 .custom-mode .confirmation-green { height:44%; }
 .custom-mode .confirmation-check { top:39%; width:90px; height:90px; transform:translate(-50%,-50%); }
@@ -512,7 +513,7 @@ let lastParticleAt = 0;
 let slidePlaying = false;
 const SLIDE_THRESHOLD = 12;
 
-function createClickParticles(clientX, clientY, amount = 4) {
+function createClickParticles(clientX, clientY, amount = 4, particleSize = "large") {
     const layer = document.getElementById('clickParticleLayer');
     if (!layer) return;
     const rect = layer.getBoundingClientRect();
@@ -522,17 +523,18 @@ function createClickParticles(clientX, clientY, amount = 4) {
         const particle = document.createElement('span');
         particle.className = 'click-particle';
         const angle = Math.random() * Math.PI * 2;
-        const distance = 20 + Math.random() * 65;
+        const distance = 35 + Math.random() * 95;
         particle.style.left = x + 'px';
         particle.style.top = y + 'px';
         particle.style.setProperty('--moveX', Math.cos(angle) * distance + 'px');
         particle.style.setProperty('--moveY', Math.sin(angle) * distance + 'px');
-        particle.style.setProperty('--size', (3 + Math.random() * 3) + 'px');
-        particle.style.setProperty('--duration', (450 + Math.random() * 350) + 'ms');
+        particle.style.setProperty('--size', (particleSize === 'tap' ? 4 + Math.random() * 6 : 5 + Math.random() * 7) + 'px');
+        particle.style.setProperty('--duration', (particleSize === 'tap' ? 450 + Math.random() * 350 : 1150 + Math.random() * 550) + 'ms');
         particle.addEventListener('animationend', () => particle.remove(), {once:true});
         fragment.appendChild(particle);
     }
     layer.appendChild(fragment);
+    while (layer.childElementCount > 420) layer.firstElementChild.remove();
 }
 
 function startSlideSound() {
@@ -573,12 +575,12 @@ document.addEventListener('pointermove', event => {
     if (!gesture.sliding && distance >= SLIDE_THRESHOLD) {
         gesture.sliding = true;
         startSlideSound();
-        createClickParticles(event.clientX, event.clientY, 12);
+        createClickParticles(event.clientX, event.clientY, 32);
     }
     if (gesture.sliding) {
         const now = performance.now();
-        if (now - lastParticleAt >= 45 && Math.hypot(event.clientX-gesture.lastX,event.clientY-gesture.lastY)>2) {
-            createClickParticles(event.clientX,event.clientY,6);
+        if (now - lastParticleAt >= 35 && Math.hypot(event.clientX-gesture.lastX,event.clientY-gesture.lastY)>2) {
+            createClickParticles(event.clientX,event.clientY,16);
             lastParticleAt = now;
         }
     }
@@ -591,7 +593,7 @@ document.addEventListener('pointerup', event => {
     if (!gesture || gesture.id !== event.pointerId) return;
     if (!gesture.sliding) {
         pressSoundBox(gesture.sound);
-        createClickParticles(event.clientX,event.clientY,10);
+        createClickParticles(event.clientX,event.clientY,28,'tap');
     }
     stopParticleHold();
 });
@@ -608,7 +610,8 @@ function createIdleParticle() {
 
     const particle = document.createElement('span');
 
-    particle.className = 'idle-particle';
+    const isGlow = Math.random() < 0.18;
+    particle.className = isGlow ? 'idle-particle idle-glow' : 'idle-particle';
 
     const angle = Math.random() * Math.PI * 2;
     const distance = 20 + Math.random() * 70;
@@ -619,7 +622,7 @@ function createIdleParticle() {
 
     particle.style.setProperty(
         '--size',
-        (2 + Math.random() * 3) + 'px'
+        (isGlow ? 7 + Math.random() * 6 : 1.5 + Math.random() * 2.5) + 'px'
     );
 
     particle.style.setProperty(
@@ -639,10 +642,11 @@ function createIdleParticle() {
 
     particle.style.setProperty(
         '--brightness',
-        0.3 + Math.random() * 0.4
+        isGlow ? 0.18 + Math.random() * 0.18 : 0.45 + Math.random() * 0.5
     );
 
     container.appendChild(particle);
+    while (container.childElementCount > 110) container.firstElementChild.remove();
 
     particle.addEventListener(
         'animationend',
@@ -665,7 +669,7 @@ function startIdleParticles() {
 
     container.replaceChildren();
 
-    for (let i = 0; i < 22; i++) {
+    for (let i = 0; i < 65; i++) {
 
         createIdleParticle();
 
@@ -685,7 +689,7 @@ function startIdleParticles() {
 
         createIdleParticle();
 
-    }, 220);
+    }, 95);
 
 }
 </script>
