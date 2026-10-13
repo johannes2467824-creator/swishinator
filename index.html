@@ -962,6 +962,30 @@ background: transparent;
     font-variant-emoji: emoji;
 }
 
+.click-particle.star-particle {
+    animation: starExplosion var(--duration) ease-out forwards;
+    transform-origin: center;
+}
+
+@keyframes starExplosion {
+    0% {
+        transform: translate(0, 0) rotate(0deg) scale(0.3);
+        opacity: 1;
+    }
+
+    40% {
+        opacity: 1;
+    }
+
+    100% {
+        transform:
+            translate(var(--moveX), var(--moveY))
+            rotate(var(--spin))
+            scale(0.7);
+        opacity: 0;
+    }
+}
+
 </style>
 
 </head>
@@ -2075,14 +2099,20 @@ function createClickParticles(clientX, clientY, amount = 4, particleSize = "larg
         particle.style.top = y + 'px';
 
         particle.style.setProperty('--moveX', Math.cos(angle) * distance + 'px');
-
         particle.style.setProperty('--moveY', Math.sin(angle) * distance + 'px');
+        if (useStars) {
+    particle.style.setProperty(
+        '--spin',
+        (Math.random() > 0.5 ? 1 : -1) *
+        (360 + Math.random() * 720) + 'deg'
+    );
+}
 
         
 particle.style.setProperty(
     '--size',
     useStars
-        ? (14 + Math.random() * 15) + 'px'
+    ? (24 + Math.random() * 36) + 'px'
         : (particleSize === 'tap'
             ? 4 + Math.random() * 6
             : 5 + Math.random() * 7) + 'px'
@@ -2244,7 +2274,7 @@ document.addEventListener('pointerup', event => {
 createClickParticles(
     event.clientX,
     event.clientY,
-    gesture.star ? 28 : 28,
+    gesture.star ? 15 : 28,
     'tap',
     gesture.star
 );
