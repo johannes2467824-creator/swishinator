@@ -265,10 +265,37 @@ swish: `
 scan: `<button class="back" onclick="showPage('home')">← Back</button><h1>Scan</h1><div class="scanframe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9V3h6M15 3h6v6M3 15v6h6M21 15v6h-6M7 7h3v3H7zM14 7h3v3h-3zM7 14h3v3H7zM14 14h2m2 0v3m-4 0h2"/></svg></div><p style="text-align:center">QR scanning is a visual demo only.</p>`
 };
 function showPage(page) {
- const home = page === 'home';
- logo.hidden = !home; actions.hidden = !home; panel.hidden = home;
- if (!home) { panel.innerHTML = pages[page] || ''; if (page === 'swish') loadSavedContacts(); }
- document.querySelectorAll('.tab').forEach(tab => { const active = tab.dataset.page === page; tab.classList.toggle('active',active); tab.setAttribute('aria-current',active ? 'page' : 'false'); });
+
+    // Stop animations from previous screens
+    clearInterval(idleParticleInterval);
+    idleParticleInterval = null;
+
+    stopParticleHold();
+
+    const home = page === 'home';
+
+    logo.hidden = !home;
+    actions.hidden = !home;
+    panel.hidden = home;
+
+    if (!home) {
+        panel.innerHTML = pages[page] || '';
+
+        if (page === 'swish') {
+            loadSavedContacts();
+        }
+    }
+
+    document.querySelectorAll('.tab').forEach(tab => {
+        const active = tab.dataset.page === page;
+
+        tab.classList.toggle('active', active);
+
+        tab.setAttribute(
+            'aria-current',
+            active ? 'page' : 'false'
+        );
+    });
 }
 function demoNotice() { alert('Transaktion nekad. Inte tillräckligt saldo på kontot.'); }
 function saveName() { const name=document.getElementById('displayname').value.trim(); document.getElementById('savedname').textContent=name ? 'Saved for this preview: '+name : 'Please enter a name.'; }
@@ -301,7 +328,7 @@ function goToSwishScreen() {
    reference.append(label,value);
    const footer=screen.querySelector('.confirmation-footer'); footer.before(reference);
  }
- updateSwishDateTime(); startIdleParticles();
+ updateSwishDateTime();
 }
 function updateSwishDateTime() {
  const display=document.getElementById('swishDateTime'); if(!display)return;
@@ -370,10 +397,7 @@ function stopParticleHold() {
  particlePointerPosition=null; clearTimeout(slideSoundTimer); slideSoundTimer=null;
  const sound=document.getElementById('paymentSlideSound'); if(sound) { sound.pause(); sound.currentTime=0; }
 }
-document.addEventListener('pointerdown',event=>{ if(event.target.closest('.confirmation-green'))startParticleHold(event); });
-document.addEventListener('pointermove',moveParticleHold);
-document.addEventListener('pointerup',stopParticleHold);
-document.addEventListener('pointercancel',stopParticleHold);
+// Particle touch effects temporarily disabled for performance testing.
 window.addEventListener('blur',stopParticleHold);
 let idleParticleInterval=null;
 function createIdleParticle() {
