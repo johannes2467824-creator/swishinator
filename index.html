@@ -59,7 +59,7 @@ button { cursor:pointer; }
 .confirmation-screen { position:relative; width:100%; height:100%; overflow:hidden; overscroll-behavior:none; background:#09141F; color:white; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif; }
 .confirmation-green { position:absolute; top:0; left:0; width:100%; height:444px; overflow:hidden; touch-action:none; }
 .confirmation-green svg.green-shape { position:absolute; inset:0; width:100%; height:100%; }
-.confirmation-particles { position:absolute; inset:0; width:100%; height:100%; overflow:hidden; pointer-events:none; z-index:1; }
+.confirmation-particles { clip-path:polygon(0 0,100% 0,100% 92.791%,95% 93.895%,90% 94.884%,85% 95.756%,80% 96.512%,75% 97.151%,70% 97.674%,65% 98.081%,60% 98.372%,55% 98.547%,50% 98.605%,45% 98.547%,40% 98.372%,35% 98.081%,30% 97.674%,25% 97.151%,20% 96.512%,15% 95.756%,10% 94.884%,5% 93.895%,0% 92.791%); position:absolute; inset:0; width:100%; height:100%; overflow:hidden; pointer-events:none; z-index:1; }
 @keyframes randomIdleParticle { 0% { transform:translate(0,0) scale(.5); opacity:0; } 12%,75% { opacity:var(--brightness); } 100% { transform:translate(var(--moveX),var(--moveY)) scale(1.3); opacity:0; } }
 .confirmation-check { position:absolute; top:170px; left:50%; transform:translateX(-50%); width:90px; height:90px; z-index:2; }
 .confirmation-message { position:absolute; top:275px; left:0; width:100%; text-align:center; font-size:25px; font-weight:400; z-index:2; }
@@ -74,7 +74,7 @@ button { cursor:pointer; }
 .confirmation-logo { display:block; width:115px; height:auto; object-fit:contain; }
 .confirmation-close { position:absolute; right:16px; top:50%; transform:translateY(-50%); width:58px; height:58px; min-width:58px; min-height:58px; border-radius:50%; display:flex; align-items:center; justify-content:center; padding:0; margin:0; font-size:36px; font-weight:400; line-height:1; background:#243F63; color:#7EBEE2; border:1px solid #30425D; cursor:pointer; }
 /* Positioned overlay for touch particles */
-.click-particle-layer { position:absolute; inset:0; width:100%; height:100%; overflow:hidden; pointer-events:none; z-index:9; contain:layout paint; }
+.click-particle-layer { position:absolute; inset:0; width:100%; height:100%; overflow:hidden; pointer-events:none; z-index:9; contain:layout paint; clip-path:polygon(0 0,100% 0,100% 92.791%,95% 93.895%,90% 94.884%,85% 95.756%,80% 96.512%,75% 97.151%,70% 97.674%,65% 98.081%,60% 98.372%,55% 98.547%,50% 98.605%,45% 98.547%,40% 98.372%,35% 98.081%,30% 97.674%,25% 97.151%,20% 96.512%,15% 95.756%,10% 94.884%,5% 93.895%,0% 92.791%); }
 /* OPTIMIZED IPHONE PARTICLES */
 
 .click-particle {
@@ -230,6 +230,7 @@ swishscreen: `
       <path d="M 0 0 H 390 V 399 Q 195 449 0 399 Z" fill="url(#greenGradient)"/>
     </svg>
     <div class="confirmation-particles"></div>
+    <div class="click-particle-layer" id="clickParticleLayer"></div>
     <!-- 3x3 SOUND PAD FÖR SWISH PLINGEN -->
 <!-- INVISIBLE SOUND PAD -->
 <div class="confirmation-soundpad">
@@ -261,7 +262,6 @@ swishscreen: `
     <div class="confirmation-brand"><img src="./swishscreen.png" class="confirmation-logo" alt="Swish"></div>
     <button class="confirmation-close" onclick="showPage('home')" aria-label="Close">×</button>
   </div>
-  <div class="click-particle-layer" id="clickParticleLayer"></div>
 </div>`,
 together: `<h1>Together</h1><div class="tile"><h2>Shared space</h2><p>Your shared activities will appear here.</p><button class="primary" onclick="demoNotice()">Create a shared space</button></div>`,
 history: `<h1>History</h1><div class="tile"><h2>No activity yet</h2><p>This demo has no transaction history.</p></div>`,
@@ -513,6 +513,18 @@ let lastParticleAt = 0;
 let slidePlaying = false;
 const SLIDE_THRESHOLD = 12;
 
+// The SVG green edge is a quadratic curve (viewBox 390 x 430).
+// Check against that curve, not the rectangular sound pad.
+function isInsideGreen(clientX, clientY) {
+    const green = document.querySelector('.confirmation-green');
+    if (!green) return false;
+    const rect = green.getBoundingClientRect();
+    const x = (clientX - rect.left) / rect.width;
+    const y = (clientY - rect.top) / rect.height;
+    if (x < 0 || x > 1 || y < 0 || y > 1) return false;
+    return y <= (399 + 100 * x * (1 - x)) / 430;
+}
+
 function createClickParticles(clientX, clientY, amount = 4, particleSize = "large") {
     const layer = document.getElementById('clickParticleLayer');
     if (!layer) return;
@@ -558,7 +570,7 @@ function stopParticleHold() {
 
 document.addEventListener('pointerdown', event => {
     const zone = event.target.closest('.sound-box');
-    if (!zone || activeGesture || (event.pointerType === 'mouse' && event.button !== 0)) return;
+    if (!zone || !isInsideGreen(event.clientX,event.clientY) || activeGesture || (event.pointerType === 'mouse' && event.button !== 0)) return;
     activeGesture = {
         id:event.pointerId, x:event.clientX, y:event.clientY,
         lastX:event.clientX, lastY:event.clientY,
@@ -571,9 +583,18 @@ document.addEventListener('pointerdown', event => {
 document.addEventListener('pointermove', event => {
     const gesture = activeGesture;
     if (!gesture || gesture.id !== event.pointerId) return;
+    const insideGreen = isInsideGreen(event.clientX, event.clientY);
     const distance = Math.hypot(event.clientX - gesture.x, event.clientY - gesture.y);
     if (!gesture.sliding && distance >= SLIDE_THRESHOLD) {
         gesture.sliding = true;
+    }
+    if (!insideGreen) {
+        stopSlideSound();
+        gesture.lastX = event.clientX;
+        gesture.lastY = event.clientY;
+        return;
+    }
+    if (gesture.sliding && !slidePlaying) {
         startSlideSound();
         createClickParticles(event.clientX, event.clientY, 32);
     }
@@ -591,7 +612,7 @@ document.addEventListener('pointermove', event => {
 document.addEventListener('pointerup', event => {
     const gesture = activeGesture;
     if (!gesture || gesture.id !== event.pointerId) return;
-    if (!gesture.sliding) {
+    if (!gesture.sliding && isInsideGreen(event.clientX,event.clientY)) {
         pressSoundBox(gesture.sound);
         createClickParticles(event.clientX,event.clientY,28,'tap');
     }
